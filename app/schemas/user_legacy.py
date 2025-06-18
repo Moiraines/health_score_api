@@ -43,7 +43,7 @@ class UserBase(BaseModel):
     username: constr(
         min_length=USERNAME_MIN_LENGTH,
         max_length=USERNAME_MAX_LENGTH,
-        regex=USERNAME_PATTERN
+        pattern=USERNAME_PATTERN
     ) = Field(..., description="Unique username (letters, numbers, and underscores only)")
     
     # Personal Information
@@ -140,7 +140,7 @@ class UserCreate(UserBase):
         ...,
         min_length=PASSWORD_MIN_LENGTH,
         max_length=PASSWORD_MAX_LENGTH,
-        regex=PASSWORD_REGEX,
+        pattern=PASSWORD_REGEX,
         description=f"Password must be {PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH} characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character"
     )
     
@@ -161,7 +161,7 @@ class UserUpdate(BaseModel):
     username: Optional[constr(
         min_length=USERNAME_MIN_LENGTH,
         max_length=USERNAME_MAX_LENGTH,
-        regex=USERNAME_PATTERN
+        pattern=USERNAME_PATTERN
     )] = None
     
     # Personal Information

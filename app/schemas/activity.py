@@ -251,6 +251,10 @@ class ActivityResponse(ActivityBase):
             }
         }
 
+class Activity(ActivityResponse):
+    """Compat alias so endpoints can import Activity directly."""
+    pass
+
 class ActivityListResponse(BaseModel):
     """Schema for paginated list of activities"""
     items: List[ActivityResponse] = Field(..., description="List of activities")

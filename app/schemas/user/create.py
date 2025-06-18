@@ -10,7 +10,7 @@ class UserCreate(UserBase):
     password: constr(
         min_length=PASSWORD_MIN_LENGTH,
         max_length=PASSWORD_MAX_LENGTH,
-        regex=PASSWORD_REGEX
+        pattern=PASSWORD_REGEX
     ) = Field(
         ...,
         description=f"Password must be {PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH} characters long, "

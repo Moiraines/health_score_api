@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Any, Dict, Optional, TypeVar, Generic, Type
 from pydantic import BaseModel, Field, validator
 from pydantic.generics import GenericModel
+from enum import Enum
+
 
 # Type variable for generic schema types
 T = TypeVar('T')

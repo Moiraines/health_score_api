@@ -14,7 +14,7 @@ from sqlalchemy.sql import func, expression
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.mutable import MutableDict
 
-from app.core.security import get_password_hash, verify_password
+from app.core.password_utils import get_password_hash, verify_password
 from app.schemas.user.enums import (
     Gender, 
     ActivityLevel, 

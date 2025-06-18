@@ -8,6 +8,7 @@ from sqlalchemy.pool import QueuePool, StaticPool
 from contextlib import contextmanager
 from pydantic import PostgresDsn, AnyUrl
 from pydantic_settings import BaseSettings
+from sqlalchemy.orm import declarative_base
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -114,7 +115,6 @@ AsyncSessionLocal = sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False,
 )
-    bind=async_engine,
 
 Base = declarative_base()
 

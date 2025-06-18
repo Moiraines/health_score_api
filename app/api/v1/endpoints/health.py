@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_active_user, get_db
 from app.db.models.user import User
-from app.schemas.health import (
+from app.schemas import (
     HealthMetricCreate,
     HealthMetricUpdate,
     HealthMetricResponse,

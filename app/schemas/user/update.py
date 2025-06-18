@@ -1,8 +1,9 @@
 """Schemas for updating user information."""
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field, HttpUrl, constr
+from pydantic import BaseModel, Field, HttpUrl, constr, field_validator
 
 from .enums import Gender, ActivityLevel, FitnessGoal, NotificationPreference
+from ..auth import PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_REGEX
 
 class UserBaseUpdate(BaseModel):
     """Base update schema for common user fields."""
@@ -101,6 +102,9 @@ class UserBaseUpdate(BaseModel):
             }
         }
 
+class UserUpdate(UserBaseUpdate):
+    pass
+
 class UserEmailUpdate(BaseModel):
     """Schema for updating user email."""
     email: str = Field(..., description="New email address")
@@ -125,13 +129,13 @@ class UserPasswordUpdate(BaseModel):
     )
     confirm_password: str = Field(..., description="Confirm new password")
     
-    @validator('confirm_password')
+    @field_validator('confirm_password')
     def passwords_match(cls, v, values, **kwargs):
         if 'new_password' in values and v != values['new_password']:
             raise ValueError('new passwords do not match')
         return v
     
-    @validator('new_password')
+    @field_validator('new_password')
     def validate_password_strength(cls, v):
         if not PASSWORD_REGEX.match(v):
             raise ValueError(

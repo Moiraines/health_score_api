@@ -7,9 +7,10 @@ import secrets
 
 from ..schemas.auth import TokenData
 from ..schemas.user import User
-from ..db.session import get_db
+from ..db.session import get_async_db
 from ..core.config import settings
-from .password_utils import verify_password  # Import from password_utils
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # Import UserService here to avoid circular imports
 from ..services.user_service import UserService
@@ -48,7 +49,7 @@ def verify_refresh_token(token: str) -> Optional[str]:
     except JWTError:
         return None
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db = Depends(get_db)):
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db = Depends(get_async_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail='Could not validate credentials',
@@ -60,11 +61,10 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db = D
         token_type: str = payload.get('token_type')
         if username is None or token_type != 'access':
             raise credentials_exception
-        token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
     user_service = UserService(db)
-    user = await user_service.get_user_by_username(token_data.username)
+    user = await user_service.get_user_by_username(username)
     if user is None:
         raise credentials_exception
     return user

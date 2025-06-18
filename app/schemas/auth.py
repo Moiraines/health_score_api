@@ -1,14 +1,19 @@
+import re
 from datetime import datetime
 from enum import Enum
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, EmailStr, Field, validator, HttpUrl
+from uuid import uuid4
+from pydantic import BaseModel, EmailStr, Field, validator, HttpUrl, field_validator
 from pydantic.networks import AnyHttpUrl
 from pydantic.types import constr, conint
+from app.core.config import settings
 
 # Password validation constants
 PASSWORD_MIN_LENGTH = 8
 PASSWORD_MAX_LENGTH = 50
-PASSWORD_REGEX = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
+PASSWORD_REGEX = re.compile(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$')
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
+REFRESH_TOKEN_EXPIRE_DAYS = settings.REFRESH_TOKEN_EXPIRE_DAYS
 
 class TokenType(str, Enum):
     ACCESS = "access"
@@ -32,6 +37,10 @@ class TokenResponse(BaseModel):
                 "expires_in": 3600
             }
         }
+
+class Token(TokenResponse):
+    """Backward-compat alias for auth endpoints."""
+    pass
 
 class TokenData(BaseModel):
     """Data structure for token payload"""
@@ -73,15 +82,15 @@ class UserLogin(BaseModel):
 class UserRegister(BaseModel):
     """Schema for user registration"""
     email: EmailStr = Field(..., description="User's email address")
-    username: str = Field(..., min_length=3, max_length=50, regex=r'^[a-zA-Z0-9_]+$', 
+    username: str = Field(..., min_length=3, max_length=50, pattern=r'^[a-zA-Z0-9_]+$',
                          description="Unique username (letters, numbers, and underscores only)")
     password: constr(
         min_length=PASSWORD_MIN_LENGTH,
         max_length=PASSWORD_MAX_LENGTH,
-        regex=PASSWORD_REGEX
+        pattern=PASSWORD_REGEX
     ) = Field(..., description=f"Password must be {PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH} characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character")
     
-    @validator('password')
+    @field_validator('password')
     def validate_password_strength(cls, v: str) -> str:
         """Additional password validation"""
         if len(v) < PASSWORD_MIN_LENGTH:

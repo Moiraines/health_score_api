@@ -6,13 +6,10 @@ from typing import Any, Dict, List, Optional, Union, Tuple
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_, text
-from sqlalchemy.sql.expression import cast, Date
 
-from app.core.config import settings
-from app.core.security import get_password_hash, verify_password
 from app.crud.base import CRUDBase
 from app.db.models.health_record import HealthRecord
-from app.schemas.health import (
+from app.schemas import (
     HealthMetricCreate,
     HealthMetricUpdate,
     HealthMetricType,

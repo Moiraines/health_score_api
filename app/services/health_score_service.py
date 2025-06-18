@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict, Any
 from datetime import date
-from sqlalchemy import select, update, delete, and_
+from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.models.health_record import HealthScore

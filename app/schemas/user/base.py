@@ -1,6 +1,6 @@
 """Base user schema with common fields and validations."""
 from datetime import date, datetime
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Literal, Dict, Any
 from pydantic import BaseModel, EmailStr, Field, validator, HttpUrl
 from pydantic.types import constr
 
@@ -21,7 +21,7 @@ class UserBase(BaseModel):
     username: constr(
         min_length=USERNAME_MIN_LENGTH,
         max_length=USERNAME_MAX_LENGTH,
-        regex=USERNAME_PATTERN
+        pattern=USERNAME_PATTERN
     ) = Field(..., description="Unique username (letters, numbers, and underscores only, starting with a letter)")
     
     # Personal Information

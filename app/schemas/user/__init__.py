@@ -11,6 +11,8 @@ from .enums import (
 )
 
 from .base import UserBase
+User = UserBase
+
 from .create import (
     UserCreate,
     UserInviteCreate,
@@ -18,7 +20,7 @@ from .create import (
 )
 
 from .update import (
-    UserBaseUpdate,
+    UserUpdate,
     UserEmailUpdate,
     UserPasswordUpdate,
     UserPreferencesUpdate,
@@ -66,7 +68,7 @@ __all__ = [
     'UserRegisterResponse',
     
     # Update
-    'UserBaseUpdate',
+    'UserUpdate',
     'UserEmailUpdate',
     'UserPasswordUpdate',
     'UserPreferencesUpdate',

@@ -15,7 +15,7 @@ class CustomBase:
     # Table naming convention (optional)
     @declared_attr
     def __tablename__(cls) -> str:
-        ""
+        """
         Generate __tablename__ automatically based on class name.
         Converts CamelCase to snake_case and appends 's' for pluralization.
         Example: 'UserActivity' -> 'user_activities'

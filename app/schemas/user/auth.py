@@ -120,7 +120,7 @@ class PasswordResetConfirm(BaseModel):
         ..., 
         min_length=PASSWORD_MIN_LENGTH,
         max_length=PASSWORD_MAX_LENGTH,
-        regex=PASSWORD_REGEX,
+        pattern=PASSWORD_REGEX,
         description=f"New password (must be {PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH} characters long, "
                   "contain at least one uppercase letter, one lowercase letter, "
                   "one number, and one special character)"
@@ -171,7 +171,7 @@ class ChangePasswordRequest(BaseModel):
         ..., 
         min_length=PASSWORD_MIN_LENGTH,
         max_length=PASSWORD_MAX_LENGTH,
-        regex=PASSWORD_REGEX,
+        pattern=PASSWORD_REGEX,
         description=f"New password (must be {PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH} characters long, "
                   "contain at least one uppercase letter, one lowercase letter, "
                   "one number, and one special character)"
