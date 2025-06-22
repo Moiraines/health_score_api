@@ -18,7 +18,7 @@ async def create_admin_user():
     """Create an admin user if one doesn't exist."""
     print("Checking for admin user...")
     
-    admin_email = "admin@healthscore.local"
+    admin_email = "admin@healthscore.com"
     admin_password = "admin"  # In production, use a secure password from environment variables
     
     async with async_session() as session:

@@ -1,7 +1,7 @@
 """Base user schema with common fields and validations."""
 from datetime import date, datetime
 from typing import Optional, List, Literal, Dict, Any
-from pydantic import BaseModel, EmailStr, Field, validator, HttpUrl
+from pydantic import BaseModel, EmailStr, Field, field_validator, HttpUrl
 from pydantic.types import constr
 
 # Constants
@@ -23,7 +23,7 @@ class UserBase(BaseModel):
         max_length=USERNAME_MAX_LENGTH,
         pattern=USERNAME_PATTERN
     ) = Field(..., description="Unique username (letters, numbers, and underscores only, starting with a letter)")
-    
+
     # Personal Information
     first_name: Optional[constr(max_length=50)] = Field(
         None, 
@@ -44,7 +44,7 @@ class UserBase(BaseModel):
         None, 
         description="User's gender identity"
     )
-    
+
     # Profile Information
     display_name: Optional[constr(
         min_length=DISPLAY_NAME_MIN_LENGTH,
@@ -67,7 +67,7 @@ class UserBase(BaseModel):
         None, 
         description="URL to the user's cover image"
     )
-    
+
     # Settings & Preferences
     language: Optional[str] = Field(
         "en", 
@@ -83,7 +83,7 @@ class UserBase(BaseModel):
         "metric", 
         description="Preferred measurement system"
     )
-    
+
     # Fitness Information
     height_cm: Optional[float] = Field(
         None, 
@@ -104,14 +104,14 @@ class UserBase(BaseModel):
         [], 
         description="User's fitness objectives"
     )
-    
+
     # Contact Information
     phone_number: Optional[str] = Field(
         None, 
         description="User's phone number with country code",
         example="+1234567890"
     )
-    
+
     # System Fields (not for user input)
     role: UserRole = Field(
         UserRole.USER, 
@@ -121,7 +121,7 @@ class UserBase(BaseModel):
         AccountStatus.PENDING_VERIFICATION, 
         description="Account status"
     )
-    
+
     # Timestamps (handled by database)
     created_at: Optional[datetime] = Field(
         None, 
@@ -135,9 +135,9 @@ class UserBase(BaseModel):
         None, 
         description="When the user last logged in"
     )
-    
+
     # Validation
-    @validator('date_of_birth')
+    @field_validator('date_of_birth')
     def validate_age(cls, v):
         if v is None:
             return v
@@ -148,17 +148,17 @@ class UserBase(BaseModel):
         if age > 120:
             raise ValueError("Invalid date of birth")
         return v
-    
-    @validator('username')
+
+    @field_validator('username')
     def username_must_be_lowercase(cls, v):
         return v.lower()
-    
-    class Config:
-        json_encoders = {
+
+    model_config = {
+        "json_encoders": {
             datetime: lambda v: v.isoformat() if v else None,
             date: lambda v: v.isoformat() if v else None
-        }
-        schema_extra = {
+        },
+        "json_schema_extra": {
             "example": {
                 "email": "user@example.com",
                 "username": "johndoe",
@@ -177,4 +177,4 @@ class UserBase(BaseModel):
                 "fitness_goals": ["strength", "endurance"],
                 "phone_number": "+1234567890"
             }
-        }
+        }}

@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Any, Dict, Optional, TypeVar, Generic, Type
-from pydantic import BaseModel, Field, validator
-from pydantic.generics import GenericModel
+from pydantic import BaseModel, Field, field_validator
 from enum import Enum
 
 
@@ -13,27 +12,28 @@ class BaseSchema(BaseModel):
     Base schema with common fields and configuration.
     All API schemas should inherit from this class.
     """
-    class Config:
+    model_config = {
         # Allow population by field name (e.g., convert from snake_case to camelCase)
-        allow_population_by_field_name = True
-        
+        "populate_by_name": True,
+
         # Use enum values instead of enum objects
-        use_enum_values = True
-        
+        "use_enum_values": True,
+
         # Allow arbitrary types for fields that might have custom types
-        arbitrary_types_allowed = True
-        
-        # Enable orm_mode for compatibility with SQLAlchemy models
-        orm_mode = True
-        
+        "arbitrary_types_allowed": True,
+
+        # Enable from_attributes for compatibility with SQLAlchemy models
+        "from_attributes": True,
+
         # Example schema for OpenAPI documentation
-        schema_extra = {
+        "json_schema_extra": {
             "example": {
                 "id": 1,
                 "created_at": "2023-01-01T00:00:00Z",
                 "updated_at": "2023-01-01T00:00:00Z"
             }
         }
+    }
 
 class TimestampSchema(BaseSchema):
     """
@@ -62,7 +62,7 @@ class IDSchemaMixin(BaseSchema):
     """
     id: int = Field(..., description="Unique identifier", example=1)
 
-class ListResponse(GenericModel, Generic[T]):
+class ListResponse(BaseModel, Generic[T]):
     """
     Generic list response schema for paginated results.
     """
@@ -71,12 +71,12 @@ class ListResponse(GenericModel, Generic[T]):
     page: int = Field(1, description="Current page number", ge=1)
     pages: int = Field(..., description="Total number of pages", ge=1)
     size: int = Field(..., description="Number of items per page", ge=1, le=100)
-    
+
     class Config:
         json_encoders = {
             datetime: lambda v: v.isoformat() if v else None
         }
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "items": [],
                 "total": 0,
@@ -92,9 +92,9 @@ class MessageResponse(BaseSchema):
     Standard message response schema for API responses.
     """
     message: str = Field(..., description="Response message")
-    
+
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "message": "Operation completed successfully"
             }
@@ -111,9 +111,9 @@ class ErrorResponse(BaseSchema):
         None, 
         description="Additional error details"
     )
-    
+
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "error": "Resource not found",
                 "code": 404,
@@ -128,8 +128,8 @@ class PaginationParams(BaseModel):
     """
     page: int = Field(1, description="Page number", ge=1)
     size: int = Field(10, description="Items per page", ge=1, le=100)
-    
-    @validator('size')
+
+    @field_validator('size')
     def validate_page_size(cls, v):
         if v > 100:
             raise ValueError("Page size cannot exceed 100")
@@ -166,9 +166,9 @@ class SearchParams(BaseModel):
         min_length=1,
         max_length=100
     )
-    
+
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "query": "morning run"
             }

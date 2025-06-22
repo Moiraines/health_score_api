@@ -515,33 +515,33 @@ class UserRelationship(Base):
         return f"<UserRelationship(follower_id={self.follower_id}, followed_id={self.followed_id})>"
 
 
-class HealthRecord(Base):
-    __tablename__ = 'health_records'
-    
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    
-    # Health Metrics
-    heart_rate = Column(Integer, nullable=True)  # BPM
-    blood_pressure_systolic = Column(Integer, nullable=True)
-    blood_pressure_diastolic = Column(Integer, nullable=True)
-    blood_oxygen = Column(Float, nullable=True)  # SpO2 percentage
-    body_temperature = Column(Float, nullable=True)  # Celsius
-    
-    # Body Composition
-    body_fat_percentage = Column(Float, nullable=True)
-    muscle_mass_kg = Column(Float, nullable=True)
-    bmi = Column(Float, nullable=True)
-    
-    # Health Score
-    health_score = Column(Integer, nullable=True)  # 0-100
-    
-    # Metadata
-    recorded_at = Column(DateTime(timezone=True), server_default=func.now())
-    notes = Column(String, nullable=True)
-    
-    # Relationships
-    user = relationship("User", back_populates="health_records")
-    
-    def __repr__(self):
-        return f"<HealthRecord(id={self.id}, user_id={self.user_id}, score={self.health_score})>"
+# class HealthRecord(Base):
+#     __tablename__ = 'health_records'
+#
+#     id = Column(Integer, primary_key=True, index=True)
+#     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+#
+#     # Health Metrics
+#     heart_rate = Column(Integer, nullable=True)  # BPM
+#     blood_pressure_systolic = Column(Integer, nullable=True)
+#     blood_pressure_diastolic = Column(Integer, nullable=True)
+#     blood_oxygen = Column(Float, nullable=True)  # SpO2 percentage
+#     body_temperature = Column(Float, nullable=True)  # Celsius
+#
+#     # Body Composition
+#     body_fat_percentage = Column(Float, nullable=True)
+#     muscle_mass_kg = Column(Float, nullable=True)
+#     bmi = Column(Float, nullable=True)
+#
+#     # Health Score
+#     health_score = Column(Integer, nullable=True)  # 0-100
+#
+#     # Metadata
+#     recorded_at = Column(DateTime(timezone=True), server_default=func.now())
+#     notes = Column(String, nullable=True)
+#
+#     # Relationships
+#     user = relationship("User", back_populates="health_records")
+#
+#     def __repr__(self):
+#         return f"<HealthRecord(id={self.id}, user_id={self.user_id}, score={self.health_score})>"

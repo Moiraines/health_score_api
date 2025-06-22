@@ -18,7 +18,7 @@ class HealthMetricType(str, Enum):
     BLOOD_OXYGEN = "blood_oxygen"  # SpO2 %
     BODY_TEMPERATURE = "body_temperature"  # °C
     RESPIRATORY_RATE = "respiratory_rate"  # breaths per minute
-    
+
     # Body Composition
     WEIGHT = "weight"  # kg
     HEIGHT = "height"  # cm
@@ -27,7 +27,7 @@ class HealthMetricType(str, Enum):
     MUSCLE_MASS = "muscle_mass"  # kg
     BONE_MASS = "bone_mass"  # kg
     WATER_PERCENTAGE = "water_percentage"  # %
-    
+
     # Blood Tests
     FASTING_GLUCOSE = "fasting_glucose"  # mg/dL
     HBA1C = "hba1c"  # %
@@ -35,7 +35,7 @@ class HealthMetricType(str, Enum):
     HDL_CHOLESTEROL = "hdl_cholesterol"  # mg/dL
     LDL_CHOLESTEROL = "ldl_cholesterol"  # mg/dL
     TRIGLYCERIDES = "triglycerides"  # mg/dL
-    
+
     # Activity and Fitness
     STEPS = "steps"  # count
     ACTIVE_MINUTES = "active_minutes"  # minutes
@@ -43,14 +43,14 @@ class HealthMetricType(str, Enum):
     CALORIES_BURNED = "calories_burned"  # kcal
     RESTING_HEART_RATE = "resting_heart_rate"  # BPM
     VO2_MAX = "vo2_max"  # mL/kg/min
-    
+
     # Sleep
     SLEEP_DURATION = "sleep_duration"  # minutes
     SLEEP_EFFICIENCY = "sleep_efficiency"  # %
     DEEP_SLEEP_DURATION = "deep_sleep_duration"  # minutes
     REM_SLEEP_DURATION = "rem_sleep_duration"  # minutes
     SLEEP_SCORE = "sleep_score"  # 0-100
-    
+
     # Nutrition
     CALORIES_CONSUMED = "calories_consumed"  # kcal
     PROTEIN_INTAKE = "protein_intake"  # g
@@ -59,7 +59,7 @@ class HealthMetricType(str, Enum):
     FIBER_INTAKE = "fiber_intake"  # g
     SUGAR_INTAKE = "sugar_intake"  # g
     WATER_INTAKE = "water_intake"  # mL
-    
+
     # Mental Wellbeing
     STRESS_LEVEL = "stress_level"  # 1-10
     MOOD_LEVEL = "mood_level"  # 1-10
@@ -103,7 +103,7 @@ class HealthMetricInDBBase(HealthMetricBase, IDSchemaMixin, TimestampSchema):
     user_id: int = Field(..., description="ID of the user who owns this metric")
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class HealthMetricResponse(HealthMetricInDBBase):

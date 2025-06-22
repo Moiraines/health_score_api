@@ -29,7 +29,7 @@ class UserPublicResponse(IDSchemaMixin):
         ..., 
         description="When the user joined the platform"
     )
-    
+
     # Stats (counts)
     follower_count: int = Field(
         0, 
@@ -43,15 +43,15 @@ class UserPublicResponse(IDSchemaMixin):
         0, 
         description="Number of activities shared"
     )
-    
+
     # Fitness information (if public)
     fitness_goals: Optional[List[FitnessGoal]] = Field(
         None, 
         description="User's fitness objectives (if public)"
     )
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "id": 123,
                 "username": "johndoe",
@@ -66,6 +66,7 @@ class UserPublicResponse(IDSchemaMixin):
                 "fitness_goals": ["strength", "endurance"]
             }
         }
+    }
 
 class UserPrivateResponse(UserPublicResponse, TimestampSchema):
     """Private user data (visible only to the user and admins)."""
@@ -86,13 +87,13 @@ class UserPrivateResponse(UserPublicResponse, TimestampSchema):
         None, 
         description="User's gender identity"
     )
-    
+
     # Contact information
     phone_number: Optional[str] = Field(
         None, 
         description="User's phone number with country code"
     )
-    
+
     # Settings & Preferences
     language: str = Field(
         "en", 
@@ -106,7 +107,7 @@ class UserPrivateResponse(UserPublicResponse, TimestampSchema):
         "metric", 
         description="Preferred measurement system"
     )
-    
+
     # Fitness Information
     height_cm: Optional[float] = Field(
         None, 
@@ -120,7 +121,7 @@ class UserPrivateResponse(UserPublicResponse, TimestampSchema):
         None, 
         description="User's typical activity level"
     )
-    
+
     # System fields
     role: UserRole = Field(
         UserRole.USER, 
@@ -138,16 +139,16 @@ class UserPrivateResponse(UserPublicResponse, TimestampSchema):
         False, 
         description="Whether the phone number has been verified"
     )
-    
+
     # Timestamps
     last_login_at: Optional[datetime] = Field(
         None, 
         description="When the user last logged in"
     )
-    
-    class Config:
-        schema_extra = {
-            **UserPublicResponse.Config.schema_extra["example"],
+
+    model_config = {
+        "json_schema_extra": {
+            **UserPublicResponse.model_config["json_schema_extra"]["example"],
             "email": "user@example.com",
             "first_name": "John",
             "last_name": "Doe",
@@ -168,11 +169,12 @@ class UserPrivateResponse(UserPublicResponse, TimestampSchema):
             "updated_at": "2023-06-08T14:30:00Z",
             "last_login_at": "2023-06-08T14:25:00Z"
         }
+    }
 
 class UserStatsResponse(BaseModel):
     """User statistics and achievements."""
     user_id: int = Field(..., description="User ID")
-    
+
     # Activity stats
     total_activities: int = Field(
         0, 
@@ -190,7 +192,7 @@ class UserStatsResponse(BaseModel):
         0, 
         description="Total calories burned across all activities"
     )
-    
+
     # Streaks
     current_streak_days: int = Field(
         0, 
@@ -200,21 +202,21 @@ class UserStatsResponse(BaseModel):
         0, 
         description="Longest streak in days"
     )
-    
+
     # Achievements
     achievement_count: int = Field(
         0, 
         description="Number of achievements unlocked"
     )
-    
+
     # Recent activity
     recent_activities: List[Dict[str, Any]] = Field(
         [], 
         description="List of recent activities"
     )
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "user_id": 123,
                 "total_activities": 42,
@@ -231,6 +233,7 @@ class UserStatsResponse(BaseModel):
                 ]
             }
         }
+    }
 
 class UserSearchResult(BaseModel):
     """User search result item."""
@@ -248,9 +251,9 @@ class UserSearchResult(BaseModel):
         False, 
         description="Whether the current user is following this user"
     )
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "id": 123,
                 "username": "johndoe",
@@ -259,6 +262,7 @@ class UserSearchResult(BaseModel):
                 "is_following": True
             }
         }
+    }
 
 class UserListResponse(BaseModel):
     """Paginated list of users."""
@@ -282,9 +286,9 @@ class UserListResponse(BaseModel):
         ..., 
         description="Number of items per page"
     )
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "items": [
                     {
@@ -308,3 +312,4 @@ class UserListResponse(BaseModel):
                 "size": 20
             }
         }
+    }

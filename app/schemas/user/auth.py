@@ -1,7 +1,7 @@
 """Authentication and authorization related schemas."""
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field, EmailStr, constr, validator
+from pydantic import BaseModel, Field, EmailStr, constr, field_validator
 
 from .enums import UserRole, AccountStatus
 from ..auth import (
@@ -25,9 +25,9 @@ class Token(BaseModel):
         REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         description="Refresh token expiration time in seconds"
     )
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                 "token_type": "bearer",
@@ -36,6 +36,7 @@ class Token(BaseModel):
                 "refresh_expires_in": 604800
             }
         }
+    }
 
 class TokenData(BaseModel):
     """Data contained in the JWT token."""
@@ -65,15 +66,16 @@ class UserLogin(BaseModel):
         False, 
         description="Whether to remember the user (longer session)"
     )
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "username": "user@example.com",
                 "password": "SecurePass123!",
                 "remember_me": True
             }
         }
+    }
 
 class UserLoginResponse(BaseModel):
     """Response after successful login."""
@@ -86,9 +88,9 @@ class UserLoginResponse(BaseModel):
     token_type: str = Field("bearer", description="Token type")
     expires_in: int = Field(..., description="Token expiration time in seconds")
     refresh_token: str = Field(..., description="Refresh token")
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "user_id": 123,
                 "email": "user@example.com",
@@ -101,17 +103,19 @@ class UserLoginResponse(BaseModel):
                 "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
             }
         }
+    }
 
 class PasswordResetRequest(BaseModel):
     """Request password reset email."""
     email: EmailStr = Field(..., description="User's email address")
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "email": "user@example.com"
             }
         }
+    }
 
 class PasswordResetConfirm(BaseModel):
     """Confirm password reset with new password."""
@@ -126,43 +130,47 @@ class PasswordResetConfirm(BaseModel):
                   "one number, and one special character)"
     )
     confirm_password: str = Field(..., description="Confirm new password")
-    
-    @validator('confirm_password')
-    def passwords_match(cls, v, values, **kwargs):
+
+    @field_validator('confirm_password')
+    def passwords_match(cls, v, info):
+        values = info.data
         if 'new_password' in values and v != values['new_password']:
             raise ValueError('passwords do not match')
         return v
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                 "new_password": "NewSecurePass123!",
                 "confirm_password": "NewSecurePass123!"
             }
         }
+    }
 
 class EmailVerificationRequest(BaseModel):
     """Request email verification."""
     email: EmailStr = Field(..., description="Email address to verify")
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "email": "user@example.com"
             }
         }
+    }
 
 class EmailVerificationConfirm(BaseModel):
     """Confirm email verification."""
     token: str = Field(..., description="Email verification token")
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
             }
         }
+    }
 
 class ChangePasswordRequest(BaseModel):
     """Change password while authenticated."""
@@ -177,8 +185,8 @@ class ChangePasswordRequest(BaseModel):
                   "one number, and one special character)"
     )
     confirm_password: str = Field(..., description="Confirm new password")
-    
-    @validator('new_password')
+
+    @field_validator('new_password')
     def validate_new_password(cls, v):
         if not PASSWORD_REGEX.match(v):
             raise ValueError(
@@ -186,21 +194,23 @@ class ChangePasswordRequest(BaseModel):
                 "one lowercase letter, one number, and one special character"
             )
         return v
-    
-    @validator('confirm_password')
-    def passwords_match(cls, v, values, **kwargs):
+
+    @field_validator('confirm_password')
+    def passwords_match(cls, v, info):
+        values = info.data
         if 'new_password' in values and v != values['new_password']:
             raise ValueError('new passwords do not match')
         return v
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "current_password": "OldPass123!",
                 "new_password": "NewSecurePass123!",
                 "confirm_password": "NewSecurePass123!"
             }
         }
+    }
 
 class SessionInfo(BaseModel):
     """Information about an active user session."""
@@ -210,9 +220,9 @@ class SessionInfo(BaseModel):
     created_at: datetime = Field(..., description="When the session was created")
     expires_at: datetime = Field(..., description="When the session expires")
     is_current: bool = Field(False, description="Whether this is the current session")
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "session_id": "sess_abc123xyz",
                 "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -222,6 +232,7 @@ class SessionInfo(BaseModel):
                 "is_current": True
             }
         }
+    }
 
 class OAuth2TokenRequest(BaseModel):
     """OAuth2 token request."""
@@ -231,9 +242,9 @@ class OAuth2TokenRequest(BaseModel):
     code: Optional[str] = Field(None, description="Authorization code")
     redirect_uri: Optional[str] = Field(None, description="Redirect URI")
     refresh_token: Optional[str] = Field(None, description="Refresh token")
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "grant_type": "authorization_code",
                 "client_id": "your-client-id",
@@ -242,3 +253,4 @@ class OAuth2TokenRequest(BaseModel):
                 "redirect_uri": "https://your-app.com/callback"
             }
         }
+    }

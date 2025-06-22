@@ -2,9 +2,9 @@
 Health metrics API endpoints.
 """
 from datetime import date, datetime
-from typing import List, Optional, Dict, Any
+from typing import  Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_active_user, get_db
@@ -20,7 +20,7 @@ from app.schemas import (
 )
 from app.services.health import health_metric_service
 
-router = APIRouter()
+router = APIRouter(prefix='/v1', tags=['Health Metrics'])
 
 @router.post(
     "/metrics",

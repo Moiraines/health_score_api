@@ -28,7 +28,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     # ---------- CREATE ----------
     async def create(self, db: AsyncSession, *, obj_in: CreateSchemaType) -> ModelType:
-        db_obj = self.model(**obj_in.dict())  # type: ignore
+        db_obj = self.model(**obj_in.model_dump())  # type: ignore
         db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)
@@ -36,7 +36,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     # ---------- UPDATE ----------
     async def update(self, db: AsyncSession, *, db_obj: ModelType, obj_in: UpdateSchemaType) -> ModelType:
-        obj_data = obj_in.dict(exclude_unset=True)
+        obj_data = obj_in.model_dump(exclude_unset=True)
         for field, value in obj_data.items():
             setattr(db_obj, field, value)
         await db.commit()

@@ -10,7 +10,7 @@ from app.schemas.user import User
 from app.services.health_score_service import HealthScoreService
 from app.db.session import get_async_db
 
-router = APIRouter(prefix='/v1', tags=['health-scores'])
+router = APIRouter(prefix='/v1', tags=['Health Scores'])
 
 class DateRange(BaseModel):
     start_date: date

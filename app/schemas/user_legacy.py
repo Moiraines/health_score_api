@@ -45,7 +45,7 @@ class UserBase(BaseModel):
         max_length=USERNAME_MAX_LENGTH,
         pattern=USERNAME_PATTERN
     ) = Field(..., description="Unique username (letters, numbers, and underscores only)")
-    
+
     # Personal Information
     first_name: Optional[constr(max_length=50)] = Field(
         None, description="User's first name"
@@ -53,7 +53,7 @@ class UserBase(BaseModel):
     last_name: Optional[constr(max_length=50)] = Field(
         None, description="User's last name"
     )
-    
+
     # Profile Information
     display_name: Optional[constr(max_length=DISPLAY_NAME_MAX_LENGTH)] = Field(
         None, description="User's display name (can include spaces and special characters)"
@@ -67,7 +67,7 @@ class UserBase(BaseModel):
     gender: Optional[Gender] = Field(
         None, description="User's gender identity"
     )
-    
+
     # Fitness Profile
     height_cm: Optional[confloat(gt=0, le=300)] = Field(
         None, description="User's height in centimeters"
@@ -81,7 +81,7 @@ class UserBase(BaseModel):
     fitness_goals: Optional[List[FitnessGoal]] = Field(
         default_factory=list, description="User's fitness goals"
     )
-    
+
     # Contact Information
     phone_number: Optional[constr(max_length=20)] = Field(
         None, description="User's phone number (international format)"
@@ -89,7 +89,7 @@ class UserBase(BaseModel):
     profile_picture_url: Optional[HttpUrl] = Field(
         None, description="URL to user's profile picture"
     )
-    
+
     # Settings
     language: Optional[constr(min_length=2, max_length=10)] = Field(
         "en", description="User's preferred language code (e.g., 'en', 'es', 'fr')"
@@ -100,7 +100,7 @@ class UserBase(BaseModel):
     units: Optional[Literal["metric", "imperial"]] = Field(
         "metric", description="Preferred measurement system"
     )
-    
+
     # Email preferences
     email_notifications: bool = Field(
         True, description="Whether to receive email notifications"
@@ -108,9 +108,9 @@ class UserBase(BaseModel):
     marketing_emails: bool = Field(
         False, description="Whether to receive marketing emails"
     )
-    
+
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "email": "user@example.com",
                 "username": "fitness_enthusiast",
@@ -143,7 +143,7 @@ class UserCreate(UserBase):
         pattern=PASSWORD_REGEX,
         description=f"Password must be {PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH} characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character"
     )
-    
+
     @validator('date_of_birth')
     def validate_age(cls, v):
         if v:
@@ -163,7 +163,7 @@ class UserUpdate(BaseModel):
         max_length=USERNAME_MAX_LENGTH,
         pattern=USERNAME_PATTERN
     )] = None
-    
+
     # Personal Information
     first_name: Optional[constr(max_length=50)] = None
     last_name: Optional[constr(max_length=50)] = None
@@ -171,28 +171,28 @@ class UserUpdate(BaseModel):
     bio: Optional[constr(max_length=BIO_MAX_LENGTH)] = None
     date_of_birth: Optional[date] = None
     gender: Optional[Gender] = None
-    
+
     # Fitness Profile
     height_cm: Optional[confloat(gt=0, le=300)] = None
     weight_kg: Optional[confloat(gt=0, le=1000)] = None
     activity_level: Optional[ActivityLevel] = None
     fitness_goals: Optional[List[FitnessGoal]] = None
-    
+
     # Contact Information
     phone_number: Optional[constr(max_length=20)] = None
     profile_picture_url: Optional[HttpUrl] = None
-    
+
     # Settings
     language: Optional[constr(min_length=2, max_length=10)] = None
     timezone: Optional[str] = None
     units: Optional[Literal["metric", "imperial"]] = None
-    
+
     # Email preferences
     email_notifications: Optional[bool] = None
     marketing_emails: Optional[bool] = None
-    
+
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "email": "updated.email@example.com",
                 "display_name": "Alex J. (Updated)",
@@ -209,10 +209,10 @@ class UserPublic(UserBase):
     created_at: datetime
     last_active: Optional[datetime] = None
     is_public: bool = Field(True, description="Whether the profile is publicly visible")
-    
+
     class Config:
-        orm_mode = True
-        schema_extra = {
+        from_attributes = True
+        json_schema_extra = {
             "example": {
                 "id": 123,
                 "email": "user@example.com",
@@ -231,10 +231,10 @@ class UserPrivate(UserPublic):
     phone_verified: bool = Field(False, description="Whether the phone number has been verified")
     is_active: bool = Field(True, description="Whether the account is active")
     is_superuser: bool = Field(False, description="Whether the user has superuser privileges")
-    
+
     class Config:
-        orm_mode = True
-        schema_extra = {
+        from_attributes = True
+        json_schema_extra = {
             "example": {
                 "id": 123,
                 "email": "user@example.com",
@@ -253,9 +253,9 @@ class UserPrivate(UserPublic):
 class UserInDB(UserPrivate):
     """Complete user model as stored in the database"""
     hashed_password: str = Field(..., description="Hashed password (never returned in API responses)")
-    
+
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserStats(BaseModel):
     """User statistics and achievements"""
@@ -266,10 +266,10 @@ class UserStats(BaseModel):
     current_streak_days: int = Field(0, description="Current streak in days")
     longest_streak_days: int = Field(0, description="Longest streak in days")
     achievement_count: int = Field(0, description="Number of achievements unlocked")
-    
+
     class Config:
-        orm_mode = True
-        schema_extra = {
+        from_attributes = True
+        json_schema_extra = {
             "example": {
                 "total_workouts": 42,
                 "total_steps": 125000,
@@ -285,9 +285,9 @@ class UserProfileResponse(BaseModel):
     """Complete user profile response"""
     user: UserPrivate
     stats: UserStats
-    
+
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "user": {
                     "id": 123,

@@ -13,7 +13,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.mutable import MutableDict
 
 from app.core.config import settings
-from app.core.security import generate_token, verify_token
+from app.core.security import create_access_token, create_refresh_token, verify_refresh_token
 from ..base import Base
 
 # Type variable for generic model operations
@@ -190,7 +190,7 @@ class UserSession(Base):
         session = cls(
             user_id=user_id,
             session_id=session_id,
-            refresh_token=generate_token(refresh_token),
+            refresh_token=create_refresh_token({"token": refresh_token}),
             user_agent=user_agent,
             ip_address=ip_address,
             location=location,
@@ -217,27 +217,37 @@ class UserSession(Base):
             cls.is_revoked == False,
             cls.expires_at > func.now()
         ).first()
-    
+
     @classmethod
     def get_by_refresh_token(
-        cls, 
-        db: Session, 
-        refresh_token: str
-    ) -> Optional['UserSession']:
-        """Get a session by refresh token."""
-        # Find all sessions with a refresh token that hasn't expired
-        sessions = db.query(cls).filter(
-            cls.refresh_token.isnot(None),
-            cls.is_revoked == False,
-            cls.refresh_expires_at > func.now()
-        ).all()
-        
-        # Verify the refresh token against the stored hash
+            cls,
+            db: Session,
+            refresh_token: str,
+    ) -> Optional["UserSession"]:
+        """Find session that owns this refresh token."""
+        incoming_payload = verify_refresh_token(refresh_token)
+        if not incoming_payload:
+            return None
+
+        sessions = (
+            db.query(cls)
+            .filter(
+                cls.refresh_token.isnot(None),
+                cls.is_revoked.is_(False),
+                cls.refresh_expires_at > func.now(),
+            )
+            .all()
+        )
+
+        incoming_token_claim = incoming_payload.get("token")
+
         for session in sessions:
-            if verify_token(refresh_token, session.refresh_token):
+            stored_payload = verify_refresh_token(session.refresh_token)
+            if stored_payload and stored_payload.get("token") == incoming_token_claim:
                 return session
+
         return None
-    
+
     @classmethod
     def revoke_all_for_user(
         cls,
@@ -409,8 +419,8 @@ class RefreshToken(Base):
         
         # Create the new token
         refresh_token = cls(
-            token=generate_token(token),
-            parent_token=generate_token(parent_token) if parent_token else None,
+            token=create_refresh_token({"token": token}),
+            parent_token=create_refresh_token({"parent_token": parent_token}) if parent_token else None,
             token_family=token_family,
             user_id=user_id,
             expires_at=expires_at
@@ -420,24 +430,34 @@ class RefreshToken(Base):
         db.commit()
         db.refresh(refresh_token)
         return refresh_token
-    
+
     @classmethod
     def get_by_token(
-        cls, 
-        db: Session, 
-        token: str
-    ) -> Optional['RefreshToken']:
-        """Get a refresh token by its value."""
-        tokens = db.query(cls).filter(
-            cls.is_revoked == False,
-            cls.expires_at > func.now()
-        ).all()
-        
+            cls,
+            db: Session,
+            token: str
+    ) -> Optional["RefreshToken"]:
+        incoming_payload = verify_refresh_token(token)
+        if not incoming_payload:
+            return None
+        incoming_claim = incoming_payload.get("token")
+
+        tokens = (
+            db.query(cls)
+            .filter(
+                cls.is_revoked.is_(False),
+                cls.expires_at > func.now(),
+            )
+            .all()
+        )
+
         for t in tokens:
-            if verify_token(token, t.token):
+            stored_payload = verify_refresh_token(t.token)
+            if stored_payload and stored_payload.get("token") == incoming_claim:
                 return t
+
         return None
-    
+
     @classmethod
     def revoke_family(
         cls,
@@ -497,12 +517,9 @@ def cleanup_auth_tables() -> None:
 # Example for Celery:
 # @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
-    # Clean up every hour
-    sender.add_periodic_task(
-        3600.0, 
-        cleanup_auth_tasks.s(), 
-        name='cleanup-auth-tables'
-    )
+    # ⬇ коментираш един ред и IDE млъква
+    # sender.add_periodic_task(3600.0, cleanup_auth_tasks.s(), name="cleanup-auth-tables")
+    pass
 
 # Example Celery task
 # @app.task

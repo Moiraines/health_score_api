@@ -56,6 +56,7 @@ class DatabaseSettings(BaseSettings):
 
 # Initialize settings
 db_settings = DatabaseSettings()
+SQLALCHEMY_DATABASE_URI = db_settings.SYNC_DATABASE_URL
 
 # Configure SQLAlchemy engine
 engine_config = {

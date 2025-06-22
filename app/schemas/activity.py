@@ -82,39 +82,39 @@ class ActivityMetrics(BaseModel):
     # Timing
     duration_seconds: conint(ge=0) = Field(0, description="Total duration in seconds")
     active_seconds: Optional[conint(ge=0)] = Field(None, description="Active time in seconds (excluding pauses)")
-    
+
     # Distance and Speed
     distance_meters: Optional[confloat(ge=0)] = Field(None, description="Total distance in meters")
     speed_avg: Optional[confloat(ge=0)] = Field(None, description="Average speed in m/s")
     speed_max: Optional[confloat(ge=0)] = Field(None, description="Maximum speed in m/s")
     pace_avg: Optional[confloat(ge=0)] = Field(None, description="Average pace in seconds per kilometer")
-    
+
     # Elevation
     elevation_gain: Optional[confloat(ge=0)] = Field(None, description="Total elevation gain in meters")
     elevation_loss: Optional[confloat(ge=0)] = Field(None, description="Total elevation loss in meters")
     elevation_min: Optional[confloat(ge=-1000, le=10000)] = Field(None, description="Minimum elevation in meters")
     elevation_max: Optional[confloat(ge=-1000, le=10000)] = Field(None, description="Maximum elevation in meters")
-    
+
     # Heart Rate
     heart_rate_avg: Optional[conint(ge=30, le=250)] = Field(None, description="Average heart rate in BPM")
     heart_rate_max: Optional[conint(ge=30, le=250)] = Field(None, description="Maximum heart rate in BPM")
     heart_rate_zones: Optional[List[HeartRateZone]] = Field(None, description="Time spent in different heart rate zones")
-    
+
     # Calories and Effort
     calories_burned: Optional[conint(ge=0)] = Field(None, description="Estimated calories burned")
     effort_score: Optional[confloat(ge=0, le=10)] = Field(None, description="Perceived effort on a scale of 1-10")
     intensity: Optional[IntensityLevel] = Field(None, description="Perceived intensity level")
-    
+
     # Repetition-based activities
     repetitions: Optional[conint(ge=0)] = Field(None, description="Number of repetitions (for strength training)")
     sets: Optional[conint(ge=0)] = Field(None, description="Number of sets (for strength training)")
     weight_kg: Optional[confloat(ge=0, le=1000)] = Field(None, description="Weight used in kg")
-    
+
     # GPS and Route
     start_location: Optional[Location] = Field(None, description="Starting location")
     end_location: Optional[Location] = Field(None, description="Ending location")
     route: Optional[List[Location]] = Field(None, description="Detailed route points")
-    
+
     # Additional Metrics
     steps: Optional[conint(ge=0)] = Field(None, description="Step count for walking/running")
     strokes: Optional[conint(ge=0)] = Field(None, description="Stroke count for swimming/rowing")
@@ -129,34 +129,34 @@ class ActivityBase(BaseSchema):
     activity_type: ActivityType = Field(..., description="Type of physical activity")
     name: Optional[str] = Field(None, max_length=100, description="Custom name for the activity")
     description: Optional[str] = Field(None, max_length=1000, description="Detailed description or notes")
-    
+
     # Timing
     start_time: datetime = Field(..., description="When the activity started")
     end_time: Optional[datetime] = Field(None, description="When the activity ended")
     timezone: str = Field("UTC", description="Timezone where the activity was recorded")
-    
+
     # Status and Visibility
     status: ActivityStatus = Field(ActivityStatus.COMPLETED, description="Current status of the activity")
     is_race: bool = Field(False, description="Whether this was a race/competition")
     is_manual: bool = Field(False, description="Whether this was manually entered")
     is_private: bool = Field(False, description="Whether this activity is private")
-    
+
     # Equipment and Environment
     equipment: Optional[List[str]] = Field(None, description="List of equipment used")
     weather: Optional[WeatherCondition] = Field(None, description="Weather conditions")
     temperature_c: Optional[confloat(ge=-50, le=60)] = Field(None, description="Temperature in Celsius")
     humidity: Optional[confloat(ge=0, le=100)] = Field(None, description="Humidity percentage")
-    
+
     # Metrics (embedded document)
     metrics: ActivityMetrics = Field(default_factory=ActivityMetrics, description="Detailed activity metrics")
-    
+
     # Media and External References
     photo_urls: Optional[List[HttpUrl]] = Field(None, description="URLs to activity photos")
     external_id: Optional[str] = Field(None, description="ID from external service (e.g., Strava, Garmin, Apple Health)")
     external_source: Optional[str] = Field(None, description="Source of the external ID")
-    
+
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "activity_type": "running",
                 "name": "Morning Run",
@@ -194,7 +194,7 @@ class ActivityBase(BaseSchema):
 class ActivityCreate(ActivityBase):
     """Schema for creating a new activity"""
     user_id: Optional[int] = Field(None, description="User ID (defaults to current user)")
-    
+
     @validator('end_time')
     def validate_times(cls, v, values):
         if 'start_time' in values and v:
@@ -209,9 +209,9 @@ class ActivityUpdate(BaseModel):
     status: Optional[ActivityStatus] = None
     is_private: Optional[bool] = None
     metrics: Optional[ActivityMetrics] = None
-    
+
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "name": "Updated Morning Run",
                 "description": "Added more details about the route",
@@ -229,10 +229,10 @@ class ActivityResponse(ActivityBase):
     user_id: int = Field(..., description="User who performed the activity")
     created_at: datetime = Field(..., description="When the activity was created in the system")
     updated_at: datetime = Field(..., description="When the activity was last updated")
-    
+
     class Config:
-        orm_mode = True
-        schema_extra = {
+        from_attributes = True
+        json_schema_extra = {
             "example": {
                 "id": 12345,
                 "user_id": 987,
@@ -261,9 +261,9 @@ class ActivityListResponse(BaseModel):
     total: int = Field(..., description="Total number of activities")
     page: int = Field(..., description="Current page number")
     pages: int = Field(..., description="Total number of pages")
-    
+
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "items": [
                     {
@@ -309,7 +309,7 @@ class WorkoutExercise(BaseModel):
     notes: Optional[str] = Field(None, description="Exercise-specific notes")
     superset_with: Optional[str] = Field(None, description="ID of exercise to superset with")
     sets: List[ExerciseSet] = Field(..., min_items=1, description="List of sets for this exercise")
-    
+
     @validator('sets')
     def validate_sets_order(cls, v):
         set_numbers = [s.set_number for s in v]
@@ -326,9 +326,9 @@ class WorkoutPlanBase(BaseModel):
     estimated_duration_minutes: Optional[conint(ge=1)] = Field(None, description="Estimated duration in minutes")
     target_muscles: List[str] = Field(default_factory=list, description="Target muscle groups")
     equipment_required: List[str] = Field(default_factory=list, description="Required equipment")
-    
+
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "name": "Upper Body Strength",
                 "description": "Focused on building upper body strength with compound movements",
@@ -351,6 +351,6 @@ class WorkoutPlanResponse(WorkoutPlanBase):
     created_at: datetime
     updated_at: datetime
     exercises: List[WorkoutExercise]
-    
+
     class Config:
-        orm_mode = True
+        from_attributes = True

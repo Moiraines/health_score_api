@@ -10,7 +10,7 @@ from app.schemas.activity import Activity, ActivityCreate, ActivityUpdate
 from app.schemas.user import User
 from app.services.activity_service import ActivityService
 
-router = APIRouter(prefix='/v1', tags=['activities'])
+router = APIRouter(prefix='/v1', tags=['Activities'])
 
 async def get_activity_service(
     db: AsyncSession = Depends(get_async_db),

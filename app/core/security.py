@@ -12,8 +12,7 @@ from ..core.config import settings
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# Import UserService here to avoid circular imports
-from ..services.user_service import UserService
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f'{settings.API_V1_STR}/token')
 
@@ -39,17 +38,23 @@ def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
-def verify_refresh_token(token: str) -> Optional[str]:
+def verify_refresh_token(token: str) -> Optional[dict]:
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        if payload.get('token_type') != 'refresh':
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM],
+        )
+        if payload.get("token_type") != "refresh":
             return None
-        username: str = payload.get('sub')
-        return username
+        return payload
     except JWTError:
         return None
 
+
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db = Depends(get_async_db)):
+    # Import UserService here to avoid circular imports
+    from ..services.user_service import UserService
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail='Could not validate credentials',

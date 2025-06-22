@@ -27,9 +27,9 @@ class TokenResponse(BaseModel):
     refresh_token: str = Field(..., description="JWT refresh token")
     token_type: str = Field("bearer", description="Type of token")
     expires_in: int = Field(..., description="Token expiration time in seconds")
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                 "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -37,6 +37,7 @@ class TokenResponse(BaseModel):
                 "expires_in": 3600
             }
         }
+    }
 
 class Token(TokenResponse):
     """Backward-compat alias for auth endpoints."""
@@ -50,9 +51,9 @@ class TokenData(BaseModel):
     exp: datetime = Field(..., description="Expiration time")
     iat: datetime = Field(default_factory=datetime.utcnow, description="Issued at time")
     jti: str = Field(default_factory=lambda: str(uuid4()), description="JWT ID")
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "sub": "user123",
                 "type": "access",
@@ -62,6 +63,7 @@ class TokenData(BaseModel):
                 "jti": "550e8400-e29b-41d4-a716-446655440000"
             }
         }
+    }
 
 class UserLogin(BaseModel):
     """Schema for user login"""
@@ -69,27 +71,29 @@ class UserLogin(BaseModel):
     password: str = Field(..., min_length=PASSWORD_MIN_LENGTH, max_length=PASSWORD_MAX_LENGTH, 
                          description="User password")
     remember_me: bool = Field(False, description="Whether to extend session duration")
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "username": "user@example.com",
                 "password": "SecurePass123!",
                 "remember_me": False
             }
         }
+    }
 
 class UserRegister(BaseModel):
     """Schema for user registration"""
     email: EmailStr = Field(..., description="User's email address")
     username: str = Field(..., min_length=3, max_length=50, pattern=r'^[a-zA-Z0-9_]+$',
                          description="Unique username (letters, numbers, and underscores only)")
-    password: constr(
+    password: str = Field(
+        ..., 
         min_length=PASSWORD_MIN_LENGTH,
         max_length=PASSWORD_MAX_LENGTH,
-        pattern=PASSWORD_REGEX
-    ) = Field(..., description=f"Password must be {PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH} characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character")
-    
+        description=f"Password must be {PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH} characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character"
+    )
+
     @field_validator('password')
     def validate_password_strength(cls, v: str) -> str:
         """Additional password validation"""
@@ -106,37 +110,40 @@ class UserRegister(BaseModel):
         if not any(c in "@$!%*?&" for c in v):
             raise ValueError("Password must contain at least one special character (@$!%*?&)")
         return v
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "email": "user@example.com",
                 "username": "newuser",
                 "password": "SecurePass123!"
             }
         }
+    }
 
 class EmailVerification(BaseModel):
     """Schema for email verification"""
     token: str = Field(..., description="Verification token sent to user's email")
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
             }
         }
+    }
 
 class PasswordResetRequest(BaseModel):
     """Schema for requesting a password reset"""
     email: EmailStr = Field(..., description="User's registered email address")
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "email": "user@example.com"
             }
         }
+    }
 
 class PasswordResetConfirm(BaseModel):
     """Schema for confirming password reset"""
@@ -144,14 +151,15 @@ class PasswordResetConfirm(BaseModel):
     new_password: str = Field(..., min_length=PASSWORD_MIN_LENGTH, 
                              max_length=PASSWORD_MAX_LENGTH,
                              description="New password")
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                 "new_password": "NewSecurePass123!"
             }
         }
+    }
 
 class ChangePassword(BaseModel):
     """Schema for changing password while authenticated"""
@@ -159,14 +167,15 @@ class ChangePassword(BaseModel):
     new_password: str = Field(..., min_length=PASSWORD_MIN_LENGTH, 
                             max_length=PASSWORD_MAX_LENGTH,
                             description="New password")
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "current_password": "OldSecurePass123!",
                 "new_password": "NewSecurePass123!"
             }
         }
+    }
 
 class OAuth2TokenResponse(BaseModel):
     """Response model for OAuth2 token endpoint"""
@@ -176,9 +185,9 @@ class OAuth2TokenResponse(BaseModel):
     refresh_token: Optional[str] = None
     scope: Optional[str] = None
     id_token: Optional[str] = None
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                 "token_type": "bearer",
@@ -188,27 +197,33 @@ class OAuth2TokenResponse(BaseModel):
                 "id_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
             }
         }
+    }
 
-class OAuth2TokenRequestForm:
+class OAuth2TokenRequestForm(BaseModel):
     """Form data for OAuth2 token endpoint"""
-    def __init__(
-        self,
-        grant_type: str = None,
-        username: str = None,
-        password: str = None,
-        scope: str = "",
-        client_id: Optional[str] = None,
-        client_secret: Optional[str] = None,
-        refresh_token: Optional[str] = None,
-        code: Optional[str] = None,
-        redirect_uri: Optional[str] = None,
-    ):
-        self.grant_type = grant_type
-        self.username = username
-        self.password = password
-        self.scopes = scope.split() if scope else []
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.refresh_token = refresh_token
-        self.code = code
-        self.redirect_uri = redirect_uri
+    grant_type: Optional[str] = None
+    username: Optional[str] = None
+    password: Optional[str] = None
+    scope: str = ""
+    client_id: Optional[str] = None
+    client_secret: Optional[str] = None
+    refresh_token: Optional[str] = None
+    code: Optional[str] = None
+    redirect_uri: Optional[str] = None
+
+    @property
+    def scopes(self) -> List[str]:
+        return self.scope.split() if self.scope else []
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "grant_type": "password",
+                "username": "user@example.com",
+                "password": "SecurePass123!",
+                "scope": "read write",
+                "client_id": "client-id",
+                "client_secret": "client-secret"
+            }
+        }
+    }

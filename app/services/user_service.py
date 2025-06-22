@@ -45,16 +45,16 @@ class UserService:
         db_user = await self.get_user(user_id)
         if not db_user:
             return None
-            
-        update_data = user_update.dict(exclude_unset=True)
+
+        update_data = user_update.model_dump(exclude_unset=True)
         if 'password' in update_data and update_data['password']:
             update_data['hashed_password'] = get_password_hash(update_data['password'])
             del update_data['password']
-            
+
         for key, value in update_data.items():
             if value is not None:
                 setattr(db_user, key, value)
-                
+
         await self.db.commit()
         await self.db.refresh(db_user)
         return db_user
@@ -63,7 +63,7 @@ class UserService:
         db_user = await self.get_user(user_id)
         if not db_user:
             return False
-            
+
         await self.db.delete(db_user)
         await self.db.commit()
         return True

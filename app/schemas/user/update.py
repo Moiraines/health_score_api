@@ -24,7 +24,7 @@ class UserBaseUpdate(BaseModel):
         None, 
         description="User's gender identity"
     )
-    
+
     # Profile Information
     display_name: Optional[constr(max_length=100)] = Field(
         None, 
@@ -42,7 +42,7 @@ class UserBaseUpdate(BaseModel):
         None, 
         description="URL to the user's cover image"
     )
-    
+
     # Settings & Preferences
     language: Optional[str] = Field(
         None, 
@@ -56,7 +56,7 @@ class UserBaseUpdate(BaseModel):
         None, 
         description="Preferred measurement system (metric/imperial)"
     )
-    
+
     # Fitness Information
     height_cm: Optional[float] = Field(
         None, 
@@ -77,15 +77,15 @@ class UserBaseUpdate(BaseModel):
         None, 
         description="User's fitness objectives"
     )
-    
+
     # Contact Information
     phone_number: Optional[str] = Field(
         None, 
         description="User's phone number with country code"
     )
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "first_name": "John",
                 "last_name": "Doe",
@@ -101,6 +101,7 @@ class UserBaseUpdate(BaseModel):
                 "phone_number": "+1234567890"
             }
         }
+    }
 
 class UserUpdate(UserBaseUpdate):
     pass
@@ -109,14 +110,15 @@ class UserEmailUpdate(BaseModel):
     """Schema for updating user email."""
     email: str = Field(..., description="New email address")
     current_password: str = Field(..., description="Current password for verification")
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "email": "new.email@example.com",
                 "current_password": "CurrentPass123!"
             }
         }
+    }
 
 class UserPasswordUpdate(BaseModel):
     """Schema for updating user password."""
@@ -128,13 +130,13 @@ class UserPasswordUpdate(BaseModel):
                   "one number, and one special character)"
     )
     confirm_password: str = Field(..., description="Confirm new password")
-    
+
     @field_validator('confirm_password')
     def passwords_match(cls, v, values, **kwargs):
         if 'new_password' in values and v != values['new_password']:
             raise ValueError('new passwords do not match')
         return v
-    
+
     @field_validator('new_password')
     def validate_password_strength(cls, v):
         if not PASSWORD_REGEX.match(v):
@@ -143,15 +145,16 @@ class UserPasswordUpdate(BaseModel):
                 "one lowercase letter, one number, and one special character"
             )
         return v
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "current_password": "OldPass123!",
                 "new_password": "NewSecurePass123!",
                 "confirm_password": "NewSecurePass123!"
             }
         }
+    }
 
 class UserPreferencesUpdate(BaseModel):
     """Schema for updating user preferences."""
@@ -175,9 +178,9 @@ class UserPreferencesUpdate(BaseModel):
         None, 
         description="Enable/disable dark mode"
     )
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "email_notifications": True,
                 "push_notifications": True,
@@ -186,6 +189,7 @@ class UserPreferencesUpdate(BaseModel):
                 "dark_mode": True
             }
         }
+    }
 
 class UserStatusUpdate(BaseModel):
     """Schema for updating user status (admin only)."""
@@ -194,11 +198,12 @@ class UserStatusUpdate(BaseModel):
         None, 
         description="Reason for status change"
     )
-    
-    class Config:
-        schema_extra = {
+
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "status": "suspended",
                 "reason": "Violation of terms of service"
             }
         }
+    }

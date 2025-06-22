@@ -36,7 +36,7 @@ class ActivityService:
         return result.scalars().all()
 
     async def create_activity(self, user_id: int, activity: ActivityCreate) -> Activity:
-        db_activity = Activity(user_id=user_id, **activity.dict())
+        db_activity = Activity(user_id=user_id, **activity.model_dump())
         self.db.add(db_activity)
         await self.db.commit()
         await self.db.refresh(db_activity)
@@ -45,7 +45,7 @@ class ActivityService:
     async def update_activity(self, activity_id: int, activity_update: ActivityUpdate) -> Optional[Activity]:
         db_activity = await self.get_activity(activity_id)
         if db_activity:
-            update_data = activity_update.dict(exclude_unset=True)
+            update_data = activity_update.model_dump(exclude_unset=True)
             for key, value in update_data.items():
                 if value is not None:
                     setattr(db_activity, key, value)

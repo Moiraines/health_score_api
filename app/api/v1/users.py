@@ -7,7 +7,7 @@ from app.schemas.user import User, UserCreate
 from app.services.user_service import UserService
 from app.db.session import get_async_db
 
-router = APIRouter(prefix='/v1', tags=['users'])
+router = APIRouter(prefix='/v1', tags=['Users'])
 
 async def get_user_service(db: AsyncSession = Depends(get_async_db)) -> UserService:
     return UserService(db)
