@@ -33,10 +33,6 @@ class User(Base):
     
     __tablename__ = 'users'
     __table_args__ = (
-        # Add indexes for common query patterns
-        Index('ix_users_email_lower', func.lower(Column('email')), unique=True),
-        Index('ix_users_username_lower', func.lower(Column('username')), unique=True),
-        Index('ix_users_phone_number', 'phone_number', unique=True, postgresql_where=Column('phone_number').isnot(None)),
         {
             'comment': 'Stores user account information and authentication details',
             'postgresql_partition_by': 'HASH (id)'  # For potential partitioning
@@ -53,7 +49,6 @@ class User(Base):
     )
     uuid = Column(
         UUID(as_uuid=True),
-        unique=True,
         nullable=False,
         default=uuid.uuid4,
         index=True,
@@ -62,8 +57,7 @@ class User(Base):
     
     # ===== Authentication =====
     email = Column(
-        String(255), 
-        unique=True, 
+        String(255),
         index=True, 
         nullable=False,
         comment='User\'s primary email address (must be unique)'
@@ -96,8 +90,7 @@ class User(Base):
     
     # ===== Profile Information =====
     username = Column(
-        String(30), 
-        unique=True, 
+        String(30),
         index=True, 
         nullable=False,
         comment='Unique username (3-30 chars, alphanumeric + underscores)'
@@ -211,14 +204,14 @@ class User(Base):
     
     # ===== Account Status =====
     role = Column(
-        Enum(UserRole, name='user_role'),
+        Enum(UserRole, name='user_role', native_enum=False),
         default=UserRole.USER,
         nullable=False,
         server_default=UserRole.USER.value,
         comment='User\'s role in the system'
     )
     status = Column(
-        Enum(AccountStatus, name='user_status'),
+        Enum(AccountStatus, name='user_status' , native_enum=False),
         default=AccountStatus.PENDING_VERIFICATION,
         nullable=False,
         server_default=AccountStatus.PENDING_VERIFICATION.value,
@@ -513,6 +506,35 @@ class UserRelationship(Base):
     
     def __repr__(self) -> str:
         return f"<UserRelationship(follower_id={self.follower_id}, followed_id={self.followed_id})>"
+
+Index(
+    'ix_users_email_lower',
+    func.lower(User.email),
+    User.id,
+    unique=True
+)
+
+Index(
+    'ix_users_username_lower',
+    func.lower(User.username),
+    User.id,
+    unique=True
+)
+
+Index(
+    'ix_users_phone_number',
+    User.phone_number,
+    User.id,
+    unique=True,
+    postgresql_where=User.phone_number.isnot(None)
+)
+
+Index(
+    'ix_users_uuid',
+    User.uuid,
+    User.id,
+    unique=True
+)
 
 
 # class HealthRecord(Base):

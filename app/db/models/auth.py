@@ -15,6 +15,7 @@ from sqlalchemy.ext.mutable import MutableDict
 from app.core.config import settings
 from app.core.security import create_access_token, create_refresh_token, verify_refresh_token
 from ..base import Base
+from sqlalchemy import PrimaryKeyConstraint
 
 # Type variable for generic model operations
 ModelType = TypeVar("ModelType", bound=Base)
@@ -24,8 +25,10 @@ class UserSession(Base):
     
     __tablename__ = 'user_sessions'
     __table_args__ = (
+        PrimaryKeyConstraint('id', 'user_id', name='pk_user_sessions'),
         Index('ix_user_sessions_user_id', 'user_id'),
-        Index('ix_user_sessions_refresh_token', 'refresh_token', unique=True),
+        Index('ix_user_sessions_session_id', 'session_id', 'user_id', unique=True),
+        Index('ix_user_sessions_refresh_token', 'refresh_token', 'user_id', unique=True),
         {
             'comment': 'Tracks active user sessions for authentication',
             'postgresql_partition_by': 'HASH (user_id)'  # For potential partitioning
@@ -35,7 +38,7 @@ class UserSession(Base):
     # ===== Core Fields =====
     id = Column(
         Integer, 
-        primary_key=True, 
+        primary_key=False,
         index=True,
         comment='Primary key',
         autoincrement=True
@@ -51,14 +54,12 @@ class UserSession(Base):
     )
     session_id = Column(
         String(255),
-        unique=True,
         nullable=False,
         index=True,
         comment='Unique session identifier (JTI claim)'
     )
     refresh_token = Column(
         String(255),
-        unique=True,
         nullable=True,
         index=True,
         comment='Hashed refresh token (for refresh token rotation)'
@@ -295,8 +296,9 @@ class RefreshToken(Base):
     
     __tablename__ = 'refresh_tokens'
     __table_args__ = (
+        PrimaryKeyConstraint('id', 'user_id'),
         Index('ix_refresh_tokens_user_id', 'user_id'),
-        Index('ix_refresh_tokens_token', 'token', unique=True),
+        Index('ix_refresh_tokens_token', 'token', 'user_id', unique=True),
         Index('ix_refresh_tokens_parent_token', 'parent_token'),
         {
             'comment': 'Tracks refresh tokens for token rotation',
@@ -307,7 +309,7 @@ class RefreshToken(Base):
     # ===== Core Fields =====
     id = Column(
         Integer, 
-        primary_key=True, 
+        nullable=False,
         index=True,
         comment='Primary key',
         autoincrement=True
@@ -316,7 +318,6 @@ class RefreshToken(Base):
     # ===== Token Info =====
     token = Column(
         String(255),
-        unique=True,
         nullable=False,
         index=True,
         comment='Hashed refresh token'

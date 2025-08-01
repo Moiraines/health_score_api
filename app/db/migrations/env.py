@@ -4,6 +4,7 @@ import logging
 from logging.config import fileConfig
 import os
 import sys
+"""print("DEBUG sys.path:", sys.path)"""
 from typing import Any, Dict
 
 from alembic import context
@@ -17,6 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 # Import your models and base
 from app.core.config import settings
 from app.db.base import Base
+from app.db.models import *
 from app.db.session import SQLALCHEMY_DATABASE_URI
 
 # this is the Alembic Config object, which provides
@@ -52,27 +54,30 @@ def do_run_migrations(connection: Connection) -> None:
     with context.begin_transaction():
         context.run_migrations()
 
-async def run_migrations_online() -> None:
-    """Run migrations in 'online' mode."""
-    # Override the sqlalchemy.url with our async URL
+def run_migrations_online() -> None:
+    """Run migrations in 'online' mode (sync version)."""
     configuration = config.get_section(config.config_ini_section, {})
     configuration["sqlalchemy.url"] = str(SQLALCHEMY_DATABASE_URI)
-    
-    connectable = AsyncEngine(
-        engine_from_config(
-            configuration,
-            prefix="sqlalchemy.",
-            poolclass=pool.NullPool,
-            future=True,
-        )
+
+    connectable = engine_from_config(
+        configuration,
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+        future=True,
     )
 
-    async with connectable.connect() as connection:
-        await connection.run_sync(do_run_migrations)
+    with connectable.connect() as connection:
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+        )
 
-    await connectable.dispose()
+        with context.begin_transaction():
+            context.run_migrations()
+
 
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    asyncio.run(run_migrations_online())
+    run_migrations_online()
+

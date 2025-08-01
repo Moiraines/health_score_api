@@ -48,7 +48,7 @@ services:
 
   pgadmin:
     environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@healthscore.local
+      - PGADMIN_DEFAULT_EMAIL=admin@healthscore.com
       - PGADMIN_DEFAULT_PASSWORD=admin
     ports:
       - "5050:80"

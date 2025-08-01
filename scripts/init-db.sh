@@ -3,7 +3,7 @@ set -e
 
 # Wait for PostgreSQL to be ready
 echo "Waiting for PostgreSQL to be ready..."
-until pg_isready -h localhost -U "$POSTGRES_USER" -d "$POSTGRES_DB"; do
+until pg_isready -h db -U "$POSTGRES_USER" -d "$POSTGRES_DB"; do
   sleep 1
 done
 
