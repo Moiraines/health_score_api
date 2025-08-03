@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import create_access_token, create_refresh_token, verify_refresh_token
+from app.core.security import create_access_token, create_refresh_token, verify_refresh_token, settings
 from app.schemas.auth import Token
 from app.services.auth_service import AuthService
 from app.db.session import get_async_db
@@ -27,21 +27,21 @@ async def login(
         )
     access_token = create_access_token(data={'sub': user.username})
     refresh_token = create_refresh_token(data={'sub': user.username})
-    return {'access_token': access_token, 'refresh_token': refresh_token, 'token_type': 'bearer'}
+    return {'access_token': access_token, 'expires_in': settings.ACCESS_TOKEN_EXPIRE_MINUTES, 'refresh_token': refresh_token, 'token_type': 'bearer'}
 
 @router.post('/refresh', response_model=Token)
 async def refresh_token(
     refresh_token: str = Form(...),
     auth_service: AuthService = Depends(get_auth_service)
 ):
-    username = verify_refresh_token(refresh_token)
-    if not username:
+    payload = verify_refresh_token(refresh_token)
+    if not payload:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Invalid refresh token',
             headers={'WWW-Authenticate': 'Bearer'},
         )
-    user = await auth_service.get_user_by_username(username)
+    user = await auth_service.get_user_by_username(payload.get('sub'))
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -52,6 +52,7 @@ async def refresh_token(
     new_refresh_token = create_refresh_token(data={'sub': user.username})
     return {
         'access_token': access_token,
+        'expires_in': settings.ACCESS_TOKEN_EXPIRE_MINUTES,
         'refresh_token': new_refresh_token,
         'token_type': 'bearer'
     }
