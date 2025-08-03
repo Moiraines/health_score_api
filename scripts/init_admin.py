@@ -5,13 +5,14 @@ Initialize an admin user in the database.
 import asyncio
 import sys
 from pathlib import Path
+from sqlalchemy import select
 
 # Add the project root to the Python path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.core.config import settings
-from app.core.security import get_password_hash
-from app.db.session import async_session
+from app.core.password_utils import get_password_hash
+from app.db.session import AsyncSessionLocal as async_session
 from app.db.models.user import User, UserRole
 
 async def create_admin_user():
@@ -24,7 +25,7 @@ async def create_admin_user():
     async with async_session() as session:
         # Check if admin already exists
         existing_admin = await session.execute(
-            User.select().where(User.email == admin_email)
+            select(User).where(User.email == admin_email)
         )
         if existing_admin.scalar_one_or_none() is not None:
             print("Admin user already exists.")
@@ -32,8 +33,10 @@ async def create_admin_user():
         
         # Create admin user
         hashed_password = get_password_hash(admin_password)
+        username = admin_email.split("@")[0][:30]
         admin = User(
             email=admin_email,
+            username=username,
             hashed_password=hashed_password,
             first_name="Admin",
             last_name="User",

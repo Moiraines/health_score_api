@@ -65,6 +65,12 @@ class HealthRecord(Base):
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert the record to a dictionary representation."""
+        if self.metric_type == HealthMetricType.BLOOD_PRESSURE:
+            systolic = self.raw_data.get("systolic") if self.raw_data else None
+            diastolic = self.raw_data.get("diastolic") if self.raw_data else None
+            value = f"{systolic}/{diastolic}" if systolic and diastolic else None
+        else:
+            value = self.value
         return {
             'id': self.id,
             'user_id': self.user_id,

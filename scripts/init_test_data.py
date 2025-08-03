@@ -6,26 +6,28 @@ import asyncio
 import random
 from datetime import datetime, timedelta
 from pathlib import Path
+from sqlalchemy import select
 import sys
 
 # Add the project root to the Python path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.core.config import settings
-from app.db.session import async_session
+from app.db.session import AsyncSessionLocal as async_session
 from app.db.models.user import User, UserRole, Gender, ActivityLevel, FitnessGoal
 from app.db.models.activity import Activity, ActivityType
 from app.db.models.health_record import HealthRecord, HealthMetricType
 from app.db.models.sleep import SleepRecord, SleepStage, SleepStageEntry
 from app.db.models.walking import WalkingSession, DailyStepGoal, StepRecord
 from app.db.models.water import WaterIntake, WaterIntakeGoal
-from app.core.security import get_password_hash
+from app.core.password_utils import get_password_hash
 
 async def create_test_users():
     """Create test users with different roles."""
     test_users = [
         {
             "email": "user1@example.com",
+            "username": "user1",
             "password": "testpass123",
             "first_name": "John",
             "last_name": "Doe",
@@ -34,34 +36,36 @@ async def create_test_users():
             "date_of_birth": datetime(1990, 5, 15).date(),
             "height_cm": 180,
             "weight_kg": 75.5,
-            "activity_level": ActivityLevel.MODERATE,
-            "fitness_goal": FitnessGoal.WEIGHT_LOSS,
+            "activity_level": ActivityLevel.MODERATELY_ACTIVE,
+            "fitness_goals": [FitnessGoal.WEIGHT_LOSS],
         },
         {
             "email": "trainer@example.com",
+            "username": "trainer",
             "password": "trainerpass",
             "first_name": "Sarah",
             "last_name": "Smith",
-            "role": UserRole.TRAINER,
+            "role": UserRole.COACH,
             "gender": Gender.FEMALE,
             "date_of_birth": datetime(1985, 10, 22).date(),
             "height_cm": 165,
             "weight_kg": 62.0,
-            "activity_level": ActivityLevel.HIGH,
-            "fitness_goal": FitnessGoal.MUSCLE_GAIN,
+            "activity_level": ActivityLevel.VERY_ACTIVE,
+            "fitness_goals": [FitnessGoal.MUSCLE_GAIN],
         },
         {
             "email": "nutritionist@example.com",
+            "username": "nutritionist",
             "password": "nutripass",
             "first_name": "Mike",
             "last_name": "Johnson",
-            "role": UserRole.NUTRITIONIST,
+            "role": UserRole.STAFF,
             "gender": Gender.MALE,
             "date_of_birth": datetime(1982, 3, 8).date(),
             "height_cm": 175,
             "weight_kg": 80.0,
-            "activity_level": ActivityLevel.MODERATE,
-            "fitness_goal": FitnessGoal.MAINTENANCE,
+            "activity_level": ActivityLevel.MODERATELY_ACTIVE,
+            "fitness_goals": [FitnessGoal.GENERAL_FITNESS],
         },
     ]
     
@@ -70,7 +74,7 @@ async def create_test_users():
         for user_data in test_users:
             # Check if user already exists
             existing_user = await session.execute(
-                User.select().where(User.email == user_data["email"])
+                select(User).where(User.email == user_data["email"])
             )
             if existing_user.scalar_one_or_none() is not None:
                 print(f"User {user_data['email']} already exists, skipping...")
@@ -178,7 +182,8 @@ async def create_test_health_records(users):
                         record = HealthRecord(
                             user_id=user.id,
                             metric_type=metric_type,
-                            value=f"{random.randint(100, 140)}/{random.randint(60, 90)}",
+                            value=0.0,
+                            raw_data={"systolic": 120, "diastolic": 80},
                             unit="mmHg",
                             recorded_at=record_date + timedelta(hours=random.randint(0, 23), minutes=random.randint(0, 59)),
                             source="test_data"
@@ -296,7 +301,7 @@ async def create_test_walking_data(users):
                 steps = random.randint(1000, 15000)
                 distance = steps * 0.000762  # Approx. 0.762 meters per step
                 
-                session = WalkingSession(
+                walking = WalkingSession(
                     user_id=user.id,
                     start_time=start_time,
                     end_time=end_time,
@@ -310,7 +315,7 @@ async def create_test_walking_data(users):
                     max_heart_rate=random.randint(140, 180),
                     device_name="Test Device"
                 )
-                walking_sessions.append(session)
+                walking_sessions.append(walking)
                 
                 # Create step record for the day
                 step_record = StepRecord(

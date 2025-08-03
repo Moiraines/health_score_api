@@ -57,6 +57,11 @@ class SleepRecord(Base):
     
     # Relationships
     user = relationship("User", back_populates="sleep_records")
+    sleep_stages = relationship(
+        "SleepStageEntry",
+        back_populates="sleep_record",
+        cascade="all, delete-orphan"
+    )
     
     def __repr__(self):
         return f"<SleepRecord(id={self.id}, user_id={self.user_id}, start='{self.start_time}', end='{self.end_time}')>"

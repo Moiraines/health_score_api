@@ -34,8 +34,8 @@ class User(Base):
     __tablename__ = 'users'
     __table_args__ = (
         {
-            'comment': 'Stores user account information and authentication details',
-            'postgresql_partition_by': 'HASH (id)'  # For potential partitioning
+            'comment': 'Stores user account information and authentication details'
+            # 'postgresql_partition_by': 'HASH (id)'  # For potential partitioning
         }
     )
     
@@ -272,15 +272,15 @@ class User(Base):
     followers = relationship(
         "User",
         secondary="user_relationships",
-        primaryjoin="UserRelationship.followed_id == User.id",
-        secondaryjoin="UserRelationship.follower_id == User.id",
+        primaryjoin="User.id == user_relationships.c.followed_id",
+        secondaryjoin="User.id == user_relationships.c.follower_id",
         back_populates="following"
     )
     following = relationship(
         "User",
         secondary="user_relationships",
-        primaryjoin="UserRelationship.follower_id == User.id",
-        secondaryjoin="UserRelationship.followed_id == User.id",
+        primaryjoin="User.id == user_relationships.c.follower_id",
+        secondaryjoin="User.id == user_relationships.c.followed_id",
         back_populates="followers"
     )
     
@@ -490,8 +490,8 @@ class UserRelationship(Base):
     )
     
     # Relationships
-    follower = relationship("User", foreign_keys=[follower_id])
-    followed = relationship("User", foreign_keys=[followed_id])
+    follower = relationship("User", foreign_keys=[follower_id], overlaps="followers,following")
+    followed = relationship("User", foreign_keys=[followed_id], overlaps="followers,following")
     
     # Constraints
     __table_args__ = (
