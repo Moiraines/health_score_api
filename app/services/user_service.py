@@ -1,5 +1,5 @@
 from typing import List, Optional
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.models.user import User
@@ -15,11 +15,15 @@ class UserService:
         return result.scalars().first()
 
     async def get_user_by_username(self, username: str) -> Optional[User]:
-        result = await self.db.execute(select(User).filter(User.username == username))
+        result = await self.db.execute(
+            select(User).where(func.lower(User.username) == username.lower())
+        )
         return result.scalars().first()
 
     async def get_user_by_email(self, email: str) -> Optional[User]:
-        result = await self.db.execute(select(User).filter(User.email == email))
+        result = await self.db.execute(
+            select(User).where(func.lower(User.email) == email.lower())
+        )
         return result.scalars().first()
 
     async def get_users(self, skip: int = 0, limit: int = 100) -> List[User]:
@@ -29,12 +33,9 @@ class UserService:
     async def create_user(self, user: UserCreate) -> User:
         hashed_password = get_password_hash(user.password)
         db_user = User(
-            username=user.username,
-            email=user.email,
-            full_name=user.full_name,
+            username=user.username.lower(),  # normalize
+            email=str(user.email),
             hashed_password=hashed_password,
-            disabled=False,
-            is_admin=False
         )
         self.db.add(db_user)
         await self.db.commit()

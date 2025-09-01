@@ -9,7 +9,6 @@ from app.services.auth_service import AuthService
 from app.db.session import get_async_db
 
 router = APIRouter(prefix='/v1', tags=['Auth'])
-
 async def get_auth_service(db: AsyncSession = Depends(get_async_db)) -> AuthService:
     return AuthService(db)
 

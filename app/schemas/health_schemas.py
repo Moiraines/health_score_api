@@ -5,7 +5,7 @@ from datetime import date, datetime
 from enum import Enum
 from typing import List, Optional, Dict, Any, Union
 
-from pydantic import BaseModel, Field, validator, confloat, conint
+from pydantic import BaseModel, Field, ConfigDict, validator, confloat, conint
 
 from .base import BaseSchema, IDSchemaMixin, TimestampSchema
 
@@ -86,7 +86,16 @@ class HealthMetricBase(BaseSchema):
 
 class HealthMetricCreate(HealthMetricBase):
     """Schema for creating a new health metric."""
-    user_id: Optional[int] = Field(None, description="User ID (automatically set from auth token)")
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "metric_type": "heart_rate",
+            "value": 75,
+            "unit": "bpm",
+            "recorded_at": "2025-08-28T21:03:00Z",
+            "source": "device",
+            "notes": "evening check"
+        }
+    })
 
 
 class HealthMetricUpdate(BaseModel):
@@ -100,11 +109,8 @@ class HealthMetricUpdate(BaseModel):
 
 class HealthMetricInDBBase(HealthMetricBase, IDSchemaMixin, TimestampSchema):
     """Base schema for health metrics stored in the database."""
-    user_id: int = Field(..., description="ID of the user who owns this metric")
-
-    class Config:
-        from_attributes = True
-
+    user_id: int
+    model_config = ConfigDict(from_attributes=True)
 
 class HealthMetricResponse(HealthMetricInDBBase):
     """Schema for health metric responses."""

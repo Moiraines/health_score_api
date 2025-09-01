@@ -122,6 +122,8 @@ class UserBase(BaseModel):
         description="Account status"
     )
 
+    is_active: bool = Field(True, description="Is the account active?")
+
     # Timestamps (handled by database)
     created_at: Optional[datetime] = Field(
         None, 

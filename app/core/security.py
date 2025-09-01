@@ -6,7 +6,7 @@ from jose import JWTError, jwt
 import secrets
 
 from ..schemas.auth import TokenData
-from ..schemas.user import User
+from ..schemas.user import UserBase as User
 from ..db.session import get_async_db
 from ..core.config import settings
 
@@ -75,6 +75,10 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db = D
     return user
 
 async def get_current_active_user(current_user: Annotated[User, Depends(get_current_user)]):
-    if current_user.disabled:
-        raise HTTPException(status_code=400, detail='Inactive user')
+    if not current_user.is_active:
+        # 403 е по-подходящ от 400
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Inactive or suspended account",
+        )
     return current_user

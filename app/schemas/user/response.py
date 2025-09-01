@@ -25,7 +25,7 @@ class UserPublicResponse(IDSchemaMixin):
         None, 
         description="User's biography or description"
     )
-    join_date: datetime = Field(
+    created_at: datetime = Field(
         ..., 
         description="When the user joined the platform"
     )
@@ -51,6 +51,7 @@ class UserPublicResponse(IDSchemaMixin):
     )
 
     model_config = {
+        "from_attributes": True,
         "json_schema_extra": {
             "example": {
                 "id": 123,
@@ -59,7 +60,7 @@ class UserPublicResponse(IDSchemaMixin):
                 "profile_image_url": "https://example.com/profiles/johndoe.jpg",
                 "cover_image_url": "https://example.com/covers/johndoe.jpg",
                 "bio": "Fitness enthusiast and health coach",
-                "join_date": "2023-01-15T10:30:00Z",
+                "created_at": "2023-01-15T10:30:00Z",
                 "follower_count": 42,
                 "following_count": 15,
                 "activity_count": 28,
@@ -147,6 +148,7 @@ class UserPrivateResponse(UserPublicResponse, TimestampSchema):
     )
 
     model_config = {
+        "from_attributes": True,
         "json_schema_extra": {
             **UserPublicResponse.model_config["json_schema_extra"]["example"],
             "email": "user@example.com",
@@ -216,6 +218,7 @@ class UserStatsResponse(BaseModel):
     )
 
     model_config = {
+        "from_attributes": True,
         "json_schema_extra": {
             "example": {
                 "user_id": 123,
@@ -253,6 +256,7 @@ class UserSearchResult(BaseModel):
     )
 
     model_config = {
+        "from_attributes": True,
         "json_schema_extra": {
             "example": {
                 "id": 123,
@@ -288,6 +292,7 @@ class UserListResponse(BaseModel):
     )
 
     model_config = {
+        "from_attributes": True,
         "json_schema_extra": {
             "example": {
                 "items": [
