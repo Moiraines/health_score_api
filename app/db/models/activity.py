@@ -1,27 +1,11 @@
 from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, Enum, JSON, Boolean
 from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
-from enum import Enum as PyEnum
+from sqlalchemy.orm import relationship, synonym
 from typing import Optional, List, Dict, Any
 from datetime import time
 from ..base import Base
-
-class ActivityType(str, PyEnum):
-    RUNNING = "running"
-    WALKING = "walking"
-    CYCLING = "cycling"
-    SWIMMING = "swimming"
-    WEIGHT_TRAINING = "weight_training"
-    YOGA = "yoga"
-    PILATES = "pilates"
-    HIKING = "hiking"
-    DANCING = "dancing"
-    MARTIAL_ARTS = "martial_arts"
-    CROSSFIT = "crossfit"
-    ELLIPTICAL = "elliptical"
-    ROWING = "rowing"
-    STAIR_CLIMBER = "stair_climber"
-    OTHER = "other"
+from app.domain.enums import ActivityType
+from sqlalchemy import Enum as SAEnum
 
 class Activity(Base):
     __tablename__ = 'activities'
@@ -30,8 +14,9 @@ class Activity(Base):
     user_id = Column(Integer, ForeignKey('users.id'), index=True, nullable=False)
     
     # Activity Details
-    activity_type = Column(Enum(ActivityType), nullable=False)
+    activity_type = Column(SAEnum(ActivityType, native_enum=False), nullable=False)
     custom_activity_name = Column(String, nullable=True)  # For 'other' activity types
+    name = synonym('custom_activity_name')
     
     # Timing
     start_time = Column(DateTime(timezone=True), nullable=False)
@@ -56,12 +41,13 @@ class Activity(Base):
     
     # Additional Details
     notes = Column(String, nullable=True)
+    description = synonym('notes')
     tags = Column(JSON, default=list)  # For categorization
     
     # Metadata
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
-    
+
     # Relationships
     user = relationship("User", back_populates="activities")
     

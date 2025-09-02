@@ -1,36 +1,13 @@
 from datetime import datetime, time, date
 from enum import Enum
 from typing import Optional, List, Dict, Any, Literal
-from pydantic import BaseModel, Field, validator, HttpUrl, conint, confloat, conlist
+from pydantic import BaseModel, Field, validator, HttpUrl, conint, confloat, model_validator
 from pydantic.types import PositiveInt, PositiveFloat
 from .base import BaseSchema
+from app.domain.enums import ActivityType
+from app.db.models.activity import Activity as ActivityORM
 
 # Constants and Enums
-class ActivityType(str, Enum):
-    """Types of physical activities"""
-    WALKING = "walking"
-    RUNNING = "running"
-    CYCLING = "cycling"
-    SWIMMING = "swimming"
-    HIKING = "hiking"
-    WEIGHT_TRAINING = "weight_training"
-    CIRCUIT_TRAINING = "circuit_training"
-    YOGA = "yoga"
-    PILATES = "pilates"
-    DANCE = "dance"
-    MARTIAL_ARTS = "martial_arts"
-    BOXING = "boxing"
-    ELLIPTICAL = "elliptical"
-    ROWING = "rowing"
-    STAIR_CLIMBING = "stair_climbing"
-    JUMP_ROPE = "jump_rope"
-    HIGH_INTENSITY_INTERVAL_TRAINING = "hiit"
-    FUNCTIONAL_STRENGTH = "functional_strength"
-    CORE_TRAINING = "core_training"
-    FLEXIBILITY = "flexibility"
-    COOLDOWN = "cooldown"
-    OTHER = "other"
-
 class IntensityLevel(str, Enum):
     """Perceived intensity of the activity"""
     VERY_LIGHT = "very_light"
@@ -81,47 +58,47 @@ class ActivityMetrics(BaseModel):
     """Detailed metrics for an activity"""
     # Timing
     duration_seconds: conint(ge=0) = Field(0, description="Total duration in seconds")
-    active_seconds: Optional[conint(ge=0)] = Field(None, description="Active time in seconds (excluding pauses)")
+    # active_seconds: Optional[conint(ge=0)] = Field(None, description="Active time in seconds (excluding pauses)")
 
     # Distance and Speed
     distance_meters: Optional[confloat(ge=0)] = Field(None, description="Total distance in meters")
-    speed_avg: Optional[confloat(ge=0)] = Field(None, description="Average speed in m/s")
-    speed_max: Optional[confloat(ge=0)] = Field(None, description="Maximum speed in m/s")
-    pace_avg: Optional[confloat(ge=0)] = Field(None, description="Average pace in seconds per kilometer")
+    # speed_avg: Optional[confloat(ge=0)] = Field(None, description="Average speed in m/s")
+    # speed_max: Optional[confloat(ge=0)] = Field(None, description="Maximum speed in m/s")
+    # pace_avg: Optional[confloat(ge=0)] = Field(None, description="Average pace in seconds per kilometer")
 
     # Elevation
     elevation_gain: Optional[confloat(ge=0)] = Field(None, description="Total elevation gain in meters")
     elevation_loss: Optional[confloat(ge=0)] = Field(None, description="Total elevation loss in meters")
-    elevation_min: Optional[confloat(ge=-1000, le=10000)] = Field(None, description="Minimum elevation in meters")
-    elevation_max: Optional[confloat(ge=-1000, le=10000)] = Field(None, description="Maximum elevation in meters")
+    # elevation_min: Optional[confloat(ge=-1000, le=10000)] = Field(None, description="Minimum elevation in meters")
+    # elevation_max: Optional[confloat(ge=-1000, le=10000)] = Field(None, description="Maximum elevation in meters")
 
     # Heart Rate
     heart_rate_avg: Optional[conint(ge=30, le=250)] = Field(None, description="Average heart rate in BPM")
     heart_rate_max: Optional[conint(ge=30, le=250)] = Field(None, description="Maximum heart rate in BPM")
-    heart_rate_zones: Optional[List[HeartRateZone]] = Field(None, description="Time spent in different heart rate zones")
+    # heart_rate_zones: Optional[List[HeartRateZone]] = Field(None, description="Time spent in different heart rate zones")
 
     # Calories and Effort
     calories_burned: Optional[conint(ge=0)] = Field(None, description="Estimated calories burned")
-    effort_score: Optional[confloat(ge=0, le=10)] = Field(None, description="Perceived effort on a scale of 1-10")
-    intensity: Optional[IntensityLevel] = Field(None, description="Perceived intensity level")
+    # effort_score: Optional[confloat(ge=0, le=10)] = Field(None, description="Perceived effort on a scale of 1-10")
+    # intensity: Optional[IntensityLevel] = Field(None, description="Perceived intensity level")
 
     # Repetition-based activities
-    repetitions: Optional[conint(ge=0)] = Field(None, description="Number of repetitions (for strength training)")
-    sets: Optional[conint(ge=0)] = Field(None, description="Number of sets (for strength training)")
-    weight_kg: Optional[confloat(ge=0, le=1000)] = Field(None, description="Weight used in kg")
+    # repetitions: Optional[conint(ge=0)] = Field(None, description="Number of repetitions (for strength training)")
+    # sets: Optional[conint(ge=0)] = Field(None, description="Number of sets (for strength training)")
+    # weight_kg: Optional[confloat(ge=0, le=1000)] = Field(None, description="Weight used in kg")
 
     # GPS and Route
-    start_location: Optional[Location] = Field(None, description="Starting location")
-    end_location: Optional[Location] = Field(None, description="Ending location")
-    route: Optional[List[Location]] = Field(None, description="Detailed route points")
+    # start_location: Optional[Location] = Field(None, description="Starting location")
+    # end_location: Optional[Location] = Field(None, description="Ending location")
+    # route: Optional[List[Location]] = Field(None, description="Detailed route points")
 
     # Additional Metrics
-    steps: Optional[conint(ge=0)] = Field(None, description="Step count for walking/running")
-    strokes: Optional[conint(ge=0)] = Field(None, description="Stroke count for swimming/rowing")
-    pool_length: Optional[confloat(ge=0)] = Field(None, description="Pool length in meters (for swimming)")
-    pool_laps: Optional[conint(ge=0)] = Field(None, description="Number of pool laps (for swimming)")
-    cadence_avg: Optional[conint(ge=0, le=300)] = Field(None, description="Average cadence in SPM (steps per minute)")
-    cadence_max: Optional[conint(ge=0, le=300)] = Field(None, description="Maximum cadence in SPM")
+    # steps: Optional[conint(ge=0)] = Field(None, description="Step count for walking/running")
+    # strokes: Optional[conint(ge=0)] = Field(None, description="Stroke count for swimming/rowing")
+    # pool_length: Optional[confloat(ge=0)] = Field(None, description="Pool length in meters (for swimming)")
+    # pool_laps: Optional[conint(ge=0)] = Field(None, description="Number of pool laps (for swimming)")
+    # cadence_avg: Optional[conint(ge=0, le=300)] = Field(None, description="Average cadence in SPM (steps per minute)")
+    # cadence_max: Optional[conint(ge=0, le=300)] = Field(None, description="Maximum cadence in SPM")
 
 # Main Activity Schemas
 class ActivityBase(BaseSchema):
@@ -133,27 +110,27 @@ class ActivityBase(BaseSchema):
     # Timing
     start_time: datetime = Field(..., description="When the activity started")
     end_time: Optional[datetime] = Field(None, description="When the activity ended")
-    timezone: str = Field("UTC", description="Timezone where the activity was recorded")
+    # timezone: str = Field("UTC", description="Timezone where the activity was recorded")
 
     # Status and Visibility
-    status: ActivityStatus = Field(ActivityStatus.COMPLETED, description="Current status of the activity")
-    is_race: bool = Field(False, description="Whether this was a race/competition")
-    is_manual: bool = Field(False, description="Whether this was manually entered")
-    is_private: bool = Field(False, description="Whether this activity is private")
+    # status: ActivityStatus = Field(ActivityStatus.COMPLETED, description="Current status of the activity")
+    # is_race: bool = Field(False, description="Whether this was a race/competition")
+    # is_manual: bool = Field(False, description="Whether this was manually entered")
+    # is_private: bool = Field(False, description="Whether this activity is private")
 
     # Equipment and Environment
-    equipment: Optional[List[str]] = Field(None, description="List of equipment used")
-    weather: Optional[WeatherCondition] = Field(None, description="Weather conditions")
-    temperature_c: Optional[confloat(ge=-50, le=60)] = Field(None, description="Temperature in Celsius")
-    humidity: Optional[confloat(ge=0, le=100)] = Field(None, description="Humidity percentage")
+    # equipment: Optional[List[str]] = Field(None, description="List of equipment used")
+    # weather: Optional[WeatherCondition] = Field(None, description="Weather conditions")
+    # temperature_c: Optional[confloat(ge=-50, le=60)] = Field(None, description="Temperature in Celsius")
+    # humidity: Optional[confloat(ge=0, le=100)] = Field(None, description="Humidity percentage")
 
     # Metrics (embedded document)
     metrics: ActivityMetrics = Field(default_factory=ActivityMetrics, description="Detailed activity metrics")
 
     # Media and External References
-    photo_urls: Optional[List[HttpUrl]] = Field(None, description="URLs to activity photos")
-    external_id: Optional[str] = Field(None, description="ID from external service (e.g., Strava, Garmin, Apple Health)")
-    external_source: Optional[str] = Field(None, description="Source of the external ID")
+    # photo_urls: Optional[List[HttpUrl]] = Field(None, description="URLs to activity photos")
+    # external_id: Optional[str] = Field(None, description="ID from external service (e.g., Strava, Garmin, Apple Health)")
+    # external_source: Optional[str] = Field(None, description="Source of the external ID")
 
     class Config:
         json_schema_extra = {
@@ -161,33 +138,33 @@ class ActivityBase(BaseSchema):
                 "activity_type": "running",
                 "name": "Morning Run",
                 "description": "Easy recovery run around the park",
-                "start_time": "2023-06-07T07:30:00Z",
-                "end_time": "2023-06-07T08:15:00Z",
-                "timezone": "America/New_York",
-                "status": "completed",
-                "is_race": False,
-                "is_manual": False,
-                "is_private": False,
-                "equipment": ["Nike Pegasus 38", "Garmin Forerunner 245"],
-                "weather": "clear",
-                "temperature_c": 18.5,
-                "humidity": 65.0,
+                "start_time": "2025-06-02T07:30:00Z",
+                "end_time": "2025-09-02T08:15:00Z",
+                # "timezone": "America/New_York",
+                # "status": "completed",
+                # "is_race": False,
+                # "is_manual": False,
+                # "is_private": False,
+                # "equipment": ["Nike Pegasus 38", "Garmin Forerunner 245"],
+                # "weather": "clear",
+                # "temperature_c": 18.5,
+                # "humidity": 65.0,
                 "metrics": {
                     "duration_seconds": 2700,
                     "distance_meters": 6000,
-                    "speed_avg": 3.3,
-                    "speed_max": 4.5,
+                    # "speed_avg": 3.3,
+                    # "speed_max": 4.5,
                     "heart_rate_avg": 145,
                     "heart_rate_max": 162,
                     "calories_burned": 420,
-                    "steps": 7500,
-                    "cadence_avg": 170,
+                    # "steps": 7500,
+                    # "cadence_avg": 170,
                     "elevation_gain": 120.5,
                     "elevation_loss": 118.2
                 },
-                "photo_urls": ["https://example.com/photos/run1.jpg"],
-                "external_id": "strava_1234567890",
-                "external_source": "strava"
+                # "photo_urls": ["https://example.com/photos/run1.jpg"],
+                # "external_id": "strava_1234567890",
+                # "external_source": "strava"
             }
         }
 
@@ -206,8 +183,8 @@ class ActivityUpdate(BaseModel):
     """Schema for updating an existing activity"""
     name: Optional[str] = Field(None, max_length=100, description="Custom name for the activity")
     description: Optional[str] = Field(None, max_length=1000, description="Detailed description or notes")
-    status: Optional[ActivityStatus] = None
-    is_private: Optional[bool] = None
+    # status: Optional[ActivityStatus] = None
+    # is_private: Optional[bool] = None
     metrics: Optional[ActivityMetrics] = None
 
     class Config:
@@ -215,11 +192,20 @@ class ActivityUpdate(BaseModel):
             "example": {
                 "name": "Updated Morning Run",
                 "description": "Added more details about the route",
-                "is_private": True,
+                # "is_private": True,
                 "metrics": {
-                    "calories_burned": 450,
-                    "effort_score": 7.5
-                }
+                    "duration_seconds": 2700,
+                    "distance_meters": 6000,
+                    # "speed_avg": 3.3,
+                    # "speed_max": 4.5,
+                    "heart_rate_avg": 145,
+                    "heart_rate_max": 162,
+                    "calories_burned": 420,
+                    # "steps": 7500,
+                    # "cadence_avg": 170,
+                    "elevation_gain": 120.5,
+                    "elevation_loss": 118.2
+                },
             }
         }
 
@@ -228,7 +214,37 @@ class ActivityResponse(ActivityBase):
     id: int = Field(..., description="Unique identifier for the activity")
     user_id: int = Field(..., description="User who performed the activity")
     created_at: datetime = Field(..., description="When the activity was created in the system")
-    updated_at: datetime = Field(..., description="When the activity was last updated")
+    updated_at: Optional[datetime] = Field(
+        None, description="When the activity was last updated"
+    )
+
+    @model_validator(mode="before") # type: ignore[call-overload]
+    @classmethod
+    def _from_orm(cls, data: Any):
+        if isinstance(data, ActivityORM):
+            obj = data
+            return {
+                "id": obj.id,
+                "user_id": obj.user_id,
+                "activity_type": obj.activity_type,  # enum -> str автоматично
+                "name": obj.custom_activity_name,
+                "description": obj.notes,
+                "start_time": obj.start_time,
+                "end_time": obj.end_time,
+                "metrics": {
+                    "duration_seconds": (obj.duration_minutes * 60) if obj.duration_minutes is not None else None,
+                    "distance_meters": obj.distance_meters,
+                    "elevation_gain": obj.elevation_gain_meters,
+                    "elevation_loss": obj.elevation_loss_meters,
+                    "heart_rate_avg": obj.average_heart_rate,
+                    "heart_rate_max": obj.max_heart_rate,
+                    "calories_burned": obj.calories_burned,
+                },
+                "created_at": obj.created_at,
+                "updated_at": obj.updated_at,
+            }
+        # ако вече е dict – оставяме както е
+        return data
 
     class Config:
         from_attributes = True
@@ -236,16 +252,20 @@ class ActivityResponse(ActivityBase):
             "example": {
                 "id": 12345,
                 "user_id": 987,
-                "created_at": "2023-06-07T08:20:00Z",
-                "updated_at": "2023-06-07T10:15:00Z",
+                "created_at": "2025-09-02T08:20:00Z",
+                "updated_at": "2025-09-02T10:15:00Z",
                 "activity_type": "running",
                 "name": "Morning Run",
-                "start_time": "2023-06-07T07:30:00Z",
-                "end_time": "2023-06-07T08:15:00Z",
-                "status": "completed",
+                "description": "Easy recovery run around the park",
+                "start_time": "2025-09-02T07:30:00Z",
+                "end_time": "2025-09-02T08:15:00Z",
                 "metrics": {
                     "duration_seconds": 2700,
                     "distance_meters": 6000,
+                    "elevation_gain": 120.5,
+                    "elevation_loss": 118.2,
+                    "heart_rate_avg": 145,
+                    "heart_rate_max": 162,
                     "calories_burned": 420
                 }
             }

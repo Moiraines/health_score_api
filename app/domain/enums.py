@@ -1,0 +1,22 @@
+from enum import Enum as PyEnum
+
+class ActivityType(str, PyEnum):
+    RUNNING = "running"
+    WALKING = "walking"
+    CYCLING = "cycling"
+    SWIMMING = "swimming"
+    WEIGHT_TRAINING = "weight_training"
+    CIRCUIT_TRAINING = "circuit_training"
+    YOGA = "yoga"
+    PILATES = "pilates"
+    HIKING = "hiking"
+    DANCING = "dancing"
+    MARTIAL_ARTS = "martial_arts"
+    BOXING = "boxing"
+    CROSSFIT = "crossfit"
+    ELLIPTICAL = "elliptical"
+    ROWING = "rowing"
+    STAIR_CLIMBER = "stair_climber"
+    JUMP_ROPE = "jump_rope"
+    FUNCTIONAL_STRENGTH = "functional_strength"
+    OTHER = "other"
