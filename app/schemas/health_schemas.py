@@ -5,65 +5,10 @@ from datetime import date, datetime
 from enum import Enum
 from typing import List, Optional, Dict, Any, Union
 
-from pydantic import BaseModel, Field, ConfigDict, validator, confloat, conint
+from pydantic import BaseModel, Field, ConfigDict, validator, confloat, conint, model_serializer, model_validator
 
 from .base import BaseSchema, IDSchemaMixin, TimestampSchema
-
-class HealthMetricType(str, Enum):
-    """Types of health metrics that can be tracked."""
-    # Vital Signs
-    HEART_RATE = "heart_rate"  # BPM
-    BLOOD_PRESSURE_SYSTOLIC = "blood_pressure_systolic"  # mmHg
-    BLOOD_PRESSURE_DIASTOLIC = "blood_pressure_diastolic"  # mmHg
-    BLOOD_OXYGEN = "blood_oxygen"  # SpO2 %
-    BODY_TEMPERATURE = "body_temperature"  # °C
-    RESPIRATORY_RATE = "respiratory_rate"  # breaths per minute
-
-    # Body Composition
-    WEIGHT = "weight"  # kg
-    HEIGHT = "height"  # cm
-    BMI = "bmi"  # kg/m²
-    BODY_FAT_PERCENTAGE = "body_fat_percentage"  # %
-    MUSCLE_MASS = "muscle_mass"  # kg
-    BONE_MASS = "bone_mass"  # kg
-    WATER_PERCENTAGE = "water_percentage"  # %
-
-    # Blood Tests
-    FASTING_GLUCOSE = "fasting_glucose"  # mg/dL
-    HBA1C = "hba1c"  # %
-    TOTAL_CHOLESTEROL = "total_cholesterol"  # mg/dL
-    HDL_CHOLESTEROL = "hdl_cholesterol"  # mg/dL
-    LDL_CHOLESTEROL = "ldl_cholesterol"  # mg/dL
-    TRIGLYCERIDES = "triglycerides"  # mg/dL
-
-    # Activity and Fitness
-    STEPS = "steps"  # count
-    ACTIVE_MINUTES = "active_minutes"  # minutes
-    EXERCISE_MINUTES = "exercise_minutes"  # minutes
-    CALORIES_BURNED = "calories_burned"  # kcal
-    RESTING_HEART_RATE = "resting_heart_rate"  # BPM
-    VO2_MAX = "vo2_max"  # mL/kg/min
-
-    # Sleep
-    SLEEP_DURATION = "sleep_duration"  # minutes
-    SLEEP_EFFICIENCY = "sleep_efficiency"  # %
-    DEEP_SLEEP_DURATION = "deep_sleep_duration"  # minutes
-    REM_SLEEP_DURATION = "rem_sleep_duration"  # minutes
-    SLEEP_SCORE = "sleep_score"  # 0-100
-
-    # Nutrition
-    CALORIES_CONSUMED = "calories_consumed"  # kcal
-    PROTEIN_INTAKE = "protein_intake"  # g
-    CARBS_INTAKE = "carbs_intake"  # g
-    FAT_INTAKE = "fat_intake"  # g
-    FIBER_INTAKE = "fiber_intake"  # g
-    SUGAR_INTAKE = "sugar_intake"  # g
-    WATER_INTAKE = "water_intake"  # mL
-
-    # Mental Wellbeing
-    STRESS_LEVEL = "stress_level"  # 1-10
-    MOOD_LEVEL = "mood_level"  # 1-10
-    ENERGY_LEVEL = "energy_level"  # 1-10
+from app.domain.enums import HealthMetricType
 
 
 class HealthMetricAggregation(str, Enum):
@@ -86,10 +31,29 @@ class HealthMetricBase(BaseSchema):
 
 class HealthMetricCreate(HealthMetricBase):
     """Schema for creating a new health metric."""
+    systolic: Optional[int] = Field(None, ge=40, le=300, description="Systolic (mmHg) for blood pressure")
+    diastolic: Optional[int] = Field(None, ge=30, le=200, description="Diastolic (mmHg) for blood pressure")
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_bp(cls, data: Any):
+        if isinstance(data, dict):
+            mt = data.get("metric_type")
+            if mt == HealthMetricType.BLOOD_PRESSURE:
+                sys = data.get("systolic")
+                dia = data.get("diastolic")
+                if sys is None or dia is None:
+                    raise ValueError("For blood_pressure you must provide both 'systolic' and 'diastolic'.")
+                data.setdefault("unit", "mmHg")
+                data["value"] = 0.0
+        return data
+
     model_config = ConfigDict(json_schema_extra={
         "example": {
             "metric_type": "heart_rate",
             "value": 75,
+            "systolic": 120,
+            "diastolic": 80,
             "unit": "bpm",
             "recorded_at": "2025-08-28T21:03:00Z",
             "source": "device",
@@ -100,7 +64,13 @@ class HealthMetricCreate(HealthMetricBase):
 
 class HealthMetricUpdate(BaseModel):
     """Schema for updating an existing health metric."""
-    value: Optional[Union[float, int]] = Field(None, description="Updated numeric value")
+    value: Optional[Union[float, int]] = Field(
+        None, description="New numeric value for non-blood_pressure metrics"
+    )
+
+    systolic: Optional[int] = Field(None, ge=40, le=300, description="Systolic (mmHg) for blood pressure")
+    diastolic: Optional[int] = Field(None, ge=30, le=200, description="Diastolic (mmHg) for blood pressure")
+
     unit: Optional[str] = Field(None, description="Updated unit of measurement")
     recorded_at: Optional[datetime] = Field(None, description="Updated timestamp")
     notes: Optional[str] = Field(None, description="Updated notes")
@@ -110,11 +80,22 @@ class HealthMetricUpdate(BaseModel):
 class HealthMetricInDBBase(HealthMetricBase, IDSchemaMixin, TimestampSchema):
     """Base schema for health metrics stored in the database."""
     user_id: int
+    raw_data: Optional[Dict[str, Any]] = Field(None, exclude=True)
     model_config = ConfigDict(from_attributes=True)
 
 class HealthMetricResponse(HealthMetricInDBBase):
     """Schema for health metric responses."""
-    pass
+    value: Union[float, int, str, None] = Field(None)
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler):
+        data = handler(self)
+        if self.metric_type == HealthMetricType.BLOOD_PRESSURE and self.raw_data:
+            sys = self.raw_data.get("systolic")
+            dia = self.raw_data.get("diastolic")
+            if sys is not None and dia is not None:
+                data["value"] = f"{int(sys)}/{int(dia)}"
+        return data
 
 
 class HealthMetricListResponse(BaseModel):

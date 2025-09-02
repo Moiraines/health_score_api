@@ -5,30 +5,7 @@ from enum import Enum as PyEnum
 from typing import Optional, List, Dict, Any
 from datetime import date, datetime
 from ..base import Base
-
-class HealthMetricType(str, PyEnum):
-    """Types of health metrics that can be tracked."""
-    HEART_RATE = "heart_rate"
-    BLOOD_PRESSURE = "blood_pressure"
-    BLOOD_OXYGEN = "blood_oxygen"
-    BODY_TEMPERATURE = "body_temperature"
-    BODY_WEIGHT = "body_weight"
-    BODY_FAT_PERCENTAGE = "body_fat_percentage"
-    MUSCLE_MASS = "muscle_mass"
-    BMI = "bmi"
-    BLOOD_GLUCOSE = "blood_glucose"
-    CHOLESTEROL = "cholesterol"
-    SLEEP_DURATION = "sleep_duration"
-    SLEEP_QUALITY = "sleep_quality"
-    STRESS_LEVEL = "stress_level"
-    ENERGY_LEVEL = "energy_level"
-    MOOD = "mood"
-    PAIN_LEVEL = "pain_level"
-    STEPS = "steps"
-    ACTIVE_MINUTES = "active_minutes"
-    WATER_INTAKE = "water_intake"
-    CALORIES_BURNED = "calories_burned"
-    CALORIES_CONSUMED = "calories_consumed"
+from app.domain.enums import HealthMetricType
 
 
 class HealthRecord(Base):
