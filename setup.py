@@ -1,0 +1,32 @@
+from setuptools import setup, find_packages
+
+setup(
+    name="health_score_api",
+    version="0.1.0",
+    packages=find_packages(),
+    install_requires=[
+        "fastapi>=0.110.0",
+        "uvicorn>=0.28.0",
+        "python-jose[cryptography]>=3.3.0",
+        "passlib[bcrypt]>=1.7.4",
+        "python-multipart>=0.0.6",
+        "pydantic>=2.6.0",
+        "pydantic-settings>=2.2.0",
+        "sqlalchemy[asyncio]>=2.0.25",
+        "alembic>=1.13.1",
+        "python-dotenv>=1.0.0",
+        "pytest>=8.0.0",
+        "pytest-asyncio>=0.23.6",
+        "httpx>=0.27.0",
+        "oauthlib>=3.2.2",
+        "requests-oauthlib>=1.3.1",
+        "openapi-schema-validator>=0.6.0",
+        "pyjwt>=2.8.0",
+        "asyncpg>=0.29.0",
+        "boto3>=1.34.0",
+        "psycopg[binary]>=3.1.0",
+        "anyio>=4.0.0",
+        "cryptography>=42.0.0"
+    ],
+    python_requires=">=3.8",
+)

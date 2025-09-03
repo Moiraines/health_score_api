@@ -1,0 +1,7 @@
+README.md
+setup.py
+health_score_api.egg-info/PKG-INFO
+health_score_api.egg-info/SOURCES.txt
+health_score_api.egg-info/dependency_links.txt
+health_score_api.egg-info/requires.txt
+health_score_api.egg-info/top_level.txt

@@ -1,0 +1,40 @@
+# Core Dependencies
+-r requirements.txt
+
+# Development Tools
+black>=23.12.1
+isort>=5.13.2
+flake8>=7.0.0
+mypy>=1.8.0
+pytest>=8.0.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.23.6
+pytest-mock>=3.12.0
+httpx>=0.27.0
+
+# Code Quality
+pre-commit>=3.6.0
+
+# Documentation
+mkdocs>=1.5.3
+mkdocs-material>=9.5.0
+mkdocstrings[python]>=0.24.0
+
+# Database Tools
+sqlalchemy2-stubs>=1.0.0
+types-python-dateutil>=2.8.19.14
+
+# Testing
+factory-boy>=3.3.0
+pytest-factoryboy>=2.6.1
+pytest-benchmark>=4.0.0
+
+# Development Server
+uvicorn[standard]>=0.28.0
+
+# Debugging
+ipdb>=0.13.13
+
+# Type Checking
+mypy-extensions>=1.0.0
+typing-extensions>=4.9.0
