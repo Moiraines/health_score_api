@@ -2,6 +2,10 @@
 
 A modern, secure FastAPI application for comprehensive health data management with OAuth2 authentication and rolling codes. Track, analyze, and visualize health metrics with a robust and scalable API.
 
+> **Note:** This repository accompanies my diploma project. The commit history reflects the work completed during the project period. A dev `.env` is included for quick Docker startup.
+
+
+
 ## Features
 
 - **Comprehensive Health Tracking**: Track over 40+ health metrics including vitals, body composition, activity, sleep, and nutrition
@@ -48,6 +52,18 @@ health_score_api/
 - **Logging**: AWS DynamoDB
 - **Containerization**: Docker
 
+## Quick start (Docker)
+   ```bash
+    git clone https://github.com/Moiraines/health_score_api.git
+    cd health_score_api
+    docker compose up --build
+   ```
+API: http://localhost:8000
+
+Swagger: http://localhost:8000/docs
+
+PgAdmin: http://localhost:5050 (email: admin@healthscore.com, pass: admin)
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -63,7 +79,7 @@ health_score_api/
 
 1. **Clone and Setup**
    ```bash
-   git clone https://github.com/your-org/health-score-api.git
+   git clone https://github.com/Moiraines/health_score_api.git
    cd health-score-api
    
    # Copy and configure environment
