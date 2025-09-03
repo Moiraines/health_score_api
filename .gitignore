@@ -1,0 +1,25 @@
+# IDE
+.idea/
+.vscode/
+
+# Python cache
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+
+# Logs
+*.log
+
+# Builds
+dist/
+build/
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Env: пазим .env и .env.example в repo-то
+.env*
+!.env
+!.env.example
