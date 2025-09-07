@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Path
 from typing import List, Optional
 from datetime import date
 from pydantic import BaseModel
@@ -36,6 +36,9 @@ async def read_health_scores(
     health_score_service: HealthScoreService = Depends(get_health_score_service),
     current_user: User = Depends(get_current_active_user)
 ):
+    if (start_date and not end_date) or (end_date and not start_date):
+        raise HTTPException(status_code=400, detail="Provide both start_date and end_date, or neither.")
+
     if start_date is not None and end_date is not None:
         return await health_score_service.get_health_scores_by_date_range(
             current_user.id, start_date, end_date, skip=skip, limit=limit
@@ -44,47 +47,55 @@ async def read_health_scores(
 
 @router.get('/health-scores/{score_id}', response_model=HealthScore)
 async def read_health_score(
-    score_id: int,
+    score_id: int = Path(..., ge=1),
     health_score_service: HealthScoreService = Depends(get_health_score_service),
     current_user: User = Depends(get_current_active_user)
 ):
-    health_score = await health_score_service.get_health_score(score_id)
+    health_score = await health_score_service.get_visible_health_score(
+        score_id=score_id,
+        user_id=current_user.id,
+        is_admin=bool(getattr(current_user, "is_admin", False)),
+    )
     if health_score is None:
         raise HTTPException(status_code=404, detail='Health score not found')
-    if health_score.user_id != current_user.id and not current_user.is_admin:
-        raise HTTPException(status_code=403, detail='Not authorized')
     return health_score
 
 @router.put('/health-scores/{score_id}', response_model=HealthScore)
 async def update_health_score(
-    score_id: int,
-    health_score_update: HealthScoreUpdate,
+    score_id: int = Path(ge=1),
+    health_score_update: HealthScoreUpdate = ...,
     health_score_service: HealthScoreService = Depends(get_health_score_service),
     current_user: User = Depends(get_current_active_user)
 ):
-    health_score = await health_score_service.get_health_score(score_id)
-    if health_score is None:
+    existing = await health_score_service.get_visible_health_score(
+        score_id=score_id,
+        user_id=current_user.id,
+        is_admin=bool(getattr(current_user, "is_admin", False)),
+    )
+
+    if existing is None:
         raise HTTPException(status_code=404, detail='Health score not found')
-    if health_score.user_id != current_user.id and not current_user.is_admin:
-        raise HTTPException(status_code=403, detail='Not authorized')
-    
-    updated_health_score = await health_score_service.update_health_score(score_id, health_score_update)
-    if updated_health_score is None:
+
+    updated = await health_score_service.update_health_score(score_id, health_score_update)
+    if updated is None:
         raise HTTPException(status_code=404, detail='Health score not found')
-    return updated_health_score
+    return updated
 
 @router.delete('/health-scores/{score_id}', status_code=status.HTTP_204_NO_CONTENT)
 async def delete_health_score(
-    score_id: int,
+    score_id: int = Path(..., ge=1),
     health_score_service: HealthScoreService = Depends(get_health_score_service),
     current_user: User = Depends(get_current_active_user)
 ):
-    health_score = await health_score_service.get_health_score(score_id)
-    if health_score is None:
+    existing = await health_score_service.get_visible_health_score(
+        score_id=score_id,
+        user_id=current_user.id,
+        is_admin=bool(getattr(current_user, "is_admin", False)),
+    )
+
+    if existing is None:
         raise HTTPException(status_code=404, detail='Health score not found')
-    if health_score.user_id != current_user.id and not current_user.is_admin:
-        raise HTTPException(status_code=403, detail='Not authorized')
-    
+
     success = await health_score_service.delete_health_score(score_id)
     if not success:
         raise HTTPException(status_code=404, detail='Health score not found')
